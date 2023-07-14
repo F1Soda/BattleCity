@@ -2,6 +2,7 @@
 #include "GLFW/glfw3.h"
 
 #include <iostream>
+#include "Renderer/ShaderProgram.h"
 
 // Переменные
 GLfloat point[] =
@@ -93,8 +94,15 @@ int main(void)
 
     glClearColor(1, 1, 0, 1);
 
-   
+    std::string vertexShader(vertex_shader);
+    std::string fragmentShader(fragment_shader);
 
+    Renderer::ShaderProgram shaderProgram(vertexShader, fragmentShader);
+    if (!shaderProgram.isCompiled())
+    {
+        std::cerr << "Can't create sahder program!";
+        return -1;
+    }
     
     // Обозначаем идентификатор вертексного щейдера, чтобы потом передать функции OpenGL
     GLuint vs = glCreateShader(GL_VERTEX_SHADER);
@@ -157,7 +165,7 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Покдлючаем шейдерную программу
-        glUseProgram(shader_program);
+        shaderProgram.use();
         //Подключаем vertex attribute object
         glBindVertexArray(vao);
 
