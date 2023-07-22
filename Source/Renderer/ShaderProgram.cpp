@@ -1,12 +1,14 @@
 #include "ShaderProgram.h"
 #include <iostream>
+#include <glm/gtc/type_ptr.hpp>
+
 
 namespace Renderer
 {
-	ShaderProgram::ShaderProgram(const std::string& vertexShader, const std::string& fragmentShader)
-	{
+    ShaderProgram::ShaderProgram(const std::string& vertexShader, const std::string& fragmentShader)
+    {
         GLuint vertexShaderID;
-        if (!createShader(vertexShader, GL_VERTEX_SHADER, vertexShaderID)) 
+        if (!createShader(vertexShader, GL_VERTEX_SHADER, vertexShaderID))
         {
             std::cerr << "VERTEX SHADER compile-time-error" << std::endl;
             return;
@@ -41,7 +43,7 @@ namespace Renderer
 
         glDeleteShader(vertexShaderID);
         glDeleteShader(fragmentShaderID);
-	}
+    }
 
     bool ShaderProgram::createShader(const std::string& source, const GLenum shaderType, GLuint& shaderID)
     {
@@ -83,7 +85,7 @@ namespace Renderer
         shaderProgram.m_isCompiled = false;
         return *this;
     }
-    
+
     ShaderProgram::ShaderProgram(ShaderProgram&& shaderProgram)
     {
         m_ID = shaderProgram.m_ID;
@@ -93,4 +95,13 @@ namespace Renderer
         shaderProgram.m_isCompiled = false;
     }
 
+    void ShaderProgram::setInt(const std::string& name, const GLint value)
+    {
+        glUniform1i(glGetUniformLocation(m_ID, name.c_str()), value);
+    }
+
+    void ShaderProgram::setMatrix4(const std::string& name, const glm::mat4& matrix)
+    {
+        glUniformMatrix4fv(glGetUniformLocation(m_ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
+    }
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <glad/glad.h>
 #include <string>
+#include <glm/mat4x4.hpp>
 
 namespace Renderer {
 	//using std::string;
@@ -11,6 +12,8 @@ namespace Renderer {
 		~ShaderProgram();
 		bool isCompiled() const { return m_isCompiled; }
 		void use() const; // включение шейдеров
+		void setInt(const std::string& name, const GLint value);
+		void setMatrix4(const std::string& name, const glm::mat4& matrix);
 
 		ShaderProgram() = delete; // запрет на создание шейдеров без самих шейдеров
 		ShaderProgram(ShaderProgram&) = delete; // нельзя пользоваться конструктором копирования

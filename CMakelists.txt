@@ -11,6 +11,11 @@ add_executable(${PROJECT_NAME}
 	Source/Renderer/ShaderProgram.h
 	Source/Resources/ResourceManager.cpp
 	Source/Resources/ResourceManager.h
+	Source/Resources/stb_image.h
+	Source/Renderer/texture2D.cpp
+	Source/Renderer/texture2D.h
+	Source/Renderer/sprite.cpp
+	Source/Renderer/sprite.h
 )
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
@@ -24,6 +29,8 @@ target_link_libraries(${PROJECT_NAME} glfw)
 
 add_subdirectory(external/glad)
 target_link_libraries(${PROJECT_NAME} glad)
+
+include_directories(external/glm)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 
