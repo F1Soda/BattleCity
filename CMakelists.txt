@@ -16,6 +16,31 @@ add_executable(${PROJECT_NAME}
 	Source/Renderer/texture2D.h
 	Source/Renderer/sprite.cpp
 	Source/Renderer/sprite.h
+	Source/Game/Game.h
+	Source/Game/Game.cpp
+	Source/Game/GameObjects/Tank.h
+	Source/Game/GameObjects/Tank.cpp
+	Source/Renderer/VertexBuffer.cpp
+	Source/Renderer/VertexBuffer.h
+	Source/Renderer/IndexBuffer.h
+	Source/Renderer/IndexBuffer.cpp
+	Source/Renderer/VertexArray.h
+	Source/Renderer/VertexArray.cpp
+	Source/Renderer/VertexBufferLayout.h
+	Source/Renderer/VertexBufferLayout.cpp
+	Source/Renderer/Renderer.cpp
+	Source/Renderer/Renderer.h
+	Source/Game/GameObjects/IGameObject.h
+	Source/Game/GameObjects/IGameObject.cpp
+	Source/Game/GameObjects/BrickWall.h
+	Source/Game/GameObjects/BrickWall.cpp
+	Source/Game/Level.h
+	Source/Game/Level.cpp
+	Source/Renderer/spriteAnimator.cpp
+	Source/Renderer/spriteAnimator.h
+	
+	res/resources.json
+
 )
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
@@ -31,6 +56,8 @@ add_subdirectory(external/glad)
 target_link_libraries(${PROJECT_NAME} glad)
 
 include_directories(external/glm)
+
+include_directories(external/rapidjson/include)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 

@@ -1,7 +1,7 @@
 #include "texture2D.h"
 
 
-namespace Renderer {
+namespace RenderEngine {
 	Texture2D::Texture2D(const GLuint& width, const GLuint& height,
 		unsigned char* data, const unsigned int channels,
 		const GLenum filter,
@@ -20,11 +20,12 @@ namespace Renderer {
 			m_mode = GL_RGBA;
 			break;
 		}
-
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
 		glGenTextures(1, &m_ID);
 		glActiveTexture(GL_TEXTURE0); // загрузили текстуру в нулевой слот
 		glBindTexture(GL_TEXTURE_2D, m_ID);
-		glTexImage2D(GL_TEXTURE_2D, 0, m_mode, m_width, m_height,0,GL_RGB, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, m_mode, m_width, m_height,0,m_mode, GL_UNSIGNED_BYTE, data);
 
 		// Установка параметров
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode); // дублирование последних пискелеей по x
@@ -34,6 +35,8 @@ namespace Renderer {
 		glGenerateMipmap(GL_TEXTURE_2D); // автоматическая генерация всех текстур mipmap
 		
 		glBindTexture(GL_TEXTURE_2D, 0); // зануляем основную текстуру
+		
+		glDisable(GL_BLEND);
 	}
 
 	Texture2D& Texture2D::operator=(Texture2D&& texture2d)
@@ -47,7 +50,7 @@ namespace Renderer {
 		return *this;
 	}
 
-	Texture2D::Texture2D(Texture2D&& texture2d)
+	Texture2D::Texture2D(Texture2D&& texture2d) noexcept
 	{
 		m_ID = texture2d.m_ID;
 		texture2d.m_ID = 0;

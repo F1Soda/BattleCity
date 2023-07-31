@@ -3,7 +3,7 @@
 #include <string>
 #include <glm/mat4x4.hpp>
 
-namespace Renderer {
+namespace RenderEngine {
 	//using std::string;
 	class ShaderProgram
 	{
@@ -21,8 +21,8 @@ namespace Renderer {
 		ShaderProgram& operator=(const ShaderProgram&) = delete; // нельзя приравнивать шейдеры,
 		// так как получатся шейдеры с одинаковыми идентификаторами, что опаять таки 
 		// вызовет ошибку при уничтожении
-		ShaderProgram& operator=(ShaderProgram&& shaderProgram); // && означает, что передаваемое значение может быть только r-value
-		ShaderProgram(ShaderProgram&& shaderProgram);
+		ShaderProgram& operator=(ShaderProgram&& shaderProgram) noexcept; // && означает, что передаваемое значение может быть только r-value
+		ShaderProgram(ShaderProgram&& shaderProgram) noexcept;
 	private:
 		bool createShader(const std::string& source, const GLenum shaderType, GLuint& shaderID);
 		bool m_isCompiled = false; // показывает, нормально ли скомпилировались шейдеры

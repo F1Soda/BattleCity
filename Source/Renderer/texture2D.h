@@ -5,7 +5,7 @@
 #include <map>
 #include <glm/vec2.hpp>
 
-namespace Renderer 
+namespace RenderEngine 
 {
 	class Texture2D
 	{
@@ -35,7 +35,7 @@ namespace Renderer
 		Texture2D(const Texture2D&) = delete;
 		Texture2D& operator=(const Texture2D&) = delete;
 		Texture2D& operator=(Texture2D&& texture2d); // Операция присваивания по перемещению
-		Texture2D(Texture2D&& texture2d); // конструктор перемещения
+		Texture2D(Texture2D&& texture2d) noexcept; // конструктор перемещения
 		~Texture2D();
 
 		void addSubtexture(std::string& name,

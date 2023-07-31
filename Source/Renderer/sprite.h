@@ -1,11 +1,16 @@
 #pragma once
 
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+#include "VertexArray.h"
+
+
 #include <glad/glad.h>
 #include <memory>
 #include <glm/vec2.hpp>
 #include <string>
 
-namespace Renderer
+namespace RenderEngine
 {
 	class Texture2D;
 	class ShaderProgram;
@@ -13,30 +18,47 @@ namespace Renderer
 	class Sprite
 	{
 	public:
-		Sprite(const std::shared_ptr<Texture2D> pTexture,
-			const std::string initialSubTexture,
-			const std::shared_ptr<ShaderProgram> pShaderProgram,
-			const glm::vec2& position = glm::vec2(0.f), 
-			const glm::vec2& size = glm::vec2(1.f),
-			const float rotation = 0);
+
+		struct FrameDescription
+		{
+			FrameDescription(const glm::vec2 _leftBottomUV, glm::vec2 _rightTopUV, uint64_t _duration)
+				: leftBottomUV(_leftBottomUV)
+				, rightTopUV(_rightTopUV)
+				, duration(_duration)
+			{}
+
+			glm::vec2 leftBottomUV;
+			glm::vec2 rightTopUV;
+			uint64_t duration;
+		};
+
+		Sprite(std::shared_ptr<Texture2D> pTexture,
+			std::string initialSubTexture,
+			std::shared_ptr<ShaderProgram> pShaderProgram);
 		~Sprite();
 		Sprite(const Sprite&) = delete;
 		Sprite& operator=(const Sprite&) = delete;
 
-		void render() const;
-		void setPosition(const glm::vec2& position);
-		void setSize(const glm::vec2& size);
-		void setRotation(const float rotation);
+		void render(const glm::vec2& position, const glm::vec2& size, const float rotation, const size_t frameId=0) const;
 
-	private:
+		uint64_t getFrameDuration(const size_t frameID) const;
+		size_t getFramesCount() const;
+		void insertFrames(std::vector<FrameDescription> framesDescriptions);
+
+	protected:
 		std::shared_ptr<Texture2D> m_pTexture;
 		std::shared_ptr<ShaderProgram> m_pShaderProgram;
-		glm::vec2 m_position;
-		glm::vec2 m_size;
-		float m_rotation;
 		GLuint m_VAO;
-		GLuint m_vertexCoordsVBO;
-		GLuint m_textureCoordsVBO;
+
+		VertexArray m_vertexArray;
+		VertexBuffer m_vertexCoordsBuffer;
+		VertexBuffer m_textureCoordsBuffer;
+		IndexBuffer m_indexBuffer;
+
+		std::vector<FrameDescription> m_frameDescriprtions;
+
+		mutable size_t m_lastFrameId;
+
 	};
 
 }
