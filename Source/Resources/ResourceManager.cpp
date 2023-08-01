@@ -244,8 +244,6 @@ bool ResourceManager::loadJSONResources(const std::string& JSONPath)
 		{
 			const std::string name = currentTextureAtlas["name"].GetString();
 			const std::string filePath = currentTextureAtlas["filePath"].GetString();
-			//const unsigned int width = currentTextureAtlas["width"].GetUint();
-			//const unsigned int height = currentTextureAtlas["height"].GetUint();
 			const unsigned int subTextureWidth = currentTextureAtlas["subTextureWidth"].GetUint();
 			const unsigned int subTextureHeight = currentTextureAtlas["subTextureHeight"].GetUint();
 			const auto subTexturesArray = currentTextureAtlas["subTextures"].GetArray();
@@ -269,6 +267,11 @@ bool ResourceManager::loadJSONResources(const std::string& JSONPath)
 			const std::string textureAtlas = currentSprite["textureAtlas"].GetString();
 			const std::string shader = currentSprite["shader"].GetString();
 			const std::string subTexture = currentSprite["initialSubTexture"].GetString();
+
+			if (name == "betonWall")
+			{
+				std::cerr << std::endl;
+			}
 
 			auto pSprite = loadSprite(name, textureAtlas, shader, subTexture);
 			if (!pSprite)

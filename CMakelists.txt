@@ -38,6 +38,8 @@ add_executable(${PROJECT_NAME}
 	Source/Game/Level.cpp
 	Source/Renderer/spriteAnimator.cpp
 	Source/Renderer/spriteAnimator.h
+	Source/Game/GameObjects/BettonWall.h
+	Source/Game/GameObjects/BettonWall.cpp
 	
 	res/resources.json
 
