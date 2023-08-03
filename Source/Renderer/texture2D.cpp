@@ -1,5 +1,5 @@
 #include "texture2D.h"
-
+#include <iostream>
 
 namespace RenderEngine {
 	Texture2D::Texture2D(const GLuint& width, const GLuint& height,
@@ -80,6 +80,7 @@ namespace RenderEngine {
 		auto it = m_subTextures.find(name);
 		if (it != m_subTextures.end())
 			return it->second;
+		std::cerr << "Can't find subTexture \"" << name << "\" in texture with ID: \"" << m_ID <<"\"(texture2D::getSubTexture)" << std::endl;
 		const static SubTexture2D defaultSubTexture;
 		return defaultSubTexture;
 	}

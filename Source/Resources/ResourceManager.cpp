@@ -166,6 +166,8 @@ std::shared_ptr<RenderEngine::Sprite> ResourceManager::loadSprite(const std::str
 
 std::shared_ptr<RenderEngine::Sprite> ResourceManager::getSprite(const std::string& spriteName)
 {
+	if (spriteName == "tree")
+		std::cerr << std::endl;
 	SpritesMap::const_iterator it = m_sprites.find(spriteName);
 	if (it != m_sprites.end())
 		return it->second;
@@ -268,7 +270,7 @@ bool ResourceManager::loadJSONResources(const std::string& JSONPath)
 			const std::string shader = currentSprite["shader"].GetString();
 			const std::string subTexture = currentSprite["initialSubTexture"].GetString();
 
-			if (name == "betonWall")
+			if (name == "trees")
 			{
 				std::cerr << std::endl;
 			}
@@ -287,7 +289,7 @@ bool ResourceManager::loadJSONResources(const std::string& JSONPath)
 				for (const auto& currentFrame : framesArray)
 				{
 					const std::string subTextureStr = currentFrame["subTexture"].GetString();
-					const uint64_t duration = currentFrame["duration"].GetUint64();
+					const double duration = currentFrame["duration"].GetDouble();
 					const auto pTextureAtlas = getTexture(textureAtlas);
 					const auto pSubTexture = pTextureAtlas->getSubTexture(subTextureStr);
 					framesDesciptions.emplace_back(pSubTexture.leftBottomUV, pSubTexture.rightTopUV, duration);

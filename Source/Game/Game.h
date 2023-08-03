@@ -13,10 +13,22 @@ public:
 	~Game();
 
 	void render();
-	void update(const uint64_t delta);
+	void update(const double delta);
 	void setKey(const int key,const int action);
 	bool init();
+	size_t getCurrentLevelWidth() const;
+	size_t getCurrentLevelHeight() const;
 
+	enum class EMoveState {
+		Idle,
+		Forward,
+		Right,
+		Left,
+		Back
+	};
+
+	static EMoveState eMoveStateFirstButton;
+	static EMoveState eMoveStateSecondButton;
 	static bool lighting;
 
 private:

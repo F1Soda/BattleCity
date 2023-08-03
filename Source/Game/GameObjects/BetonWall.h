@@ -13,7 +13,7 @@ class BetonWall : public IGameObject
 {
 public: 
 
-	enum class EBetonWallType
+	enum class EBetonWallType : uint8_t
 	{
 		All,
 		Top,
@@ -26,13 +26,13 @@ public:
 		BottomRight
 	};
 
-	enum class EBlockState
+	enum class EBlockState : uint8_t
 	{
 		Enabled, 
 		Destroyed
 	};
 
-	enum class EBlockLocation
+	enum class EBlockLocation : uint8_t
 	{
 		TopLeft,
 		TopRight,
@@ -40,9 +40,9 @@ public:
 		BottomRight
 	};
 
-	BetonWall(const EBetonWallType eBlockWallType , const glm::vec2& position, const glm::vec2& size, const float rotation);
+	BetonWall(const EBetonWallType eBlockWallType , const glm::vec2& position, const glm::vec2& size, const float rotation, const float layer);
 	virtual void render() const override;
-	virtual void update(const uint64_t delta) override;
+	virtual void update(const double delta) override;
 
 private:
 	void renderBlock(const EBlockLocation eBlockLocation) const;

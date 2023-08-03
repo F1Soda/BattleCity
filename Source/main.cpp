@@ -77,10 +77,12 @@ int main(int argc, char** argv)
    
     
     RenderEngine::Renderer::setClearColor(0.0f,0.5f,0.5f,1.0f);
+    RenderEngine::Renderer::setDepth(true);
     {
         // При запуске программы в функцыю main передаётся путь к exe.файлу
         ResourceManager::setExecutablePath(argv[0]);
         g_game->init();
+        glfwSetWindowSize(pWindow, static_cast<int>(3*g_game->getCurrentLevelWidth()), static_cast<int>(3 * g_game->getCurrentLevelHeight()));
         
         auto lastTime = std::chrono::high_resolution_clock::now();
 
@@ -89,7 +91,7 @@ int main(int argc, char** argv)
         {
             auto currentTime = std::chrono::high_resolution_clock::now();
 
-            uint64_t duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime).count();
+            double duration = std::chrono::duration<double, std::milli>(currentTime - lastTime).count();
             lastTime = currentTime;
             g_game->update(duration);
 
@@ -136,7 +138,8 @@ void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int height)
 {
     g_windowSize.x = width;
     g_windowSize.y = height;
-    const float map_aspect_ratio = 13.f / 14.f;
+    const float map_aspect_ratio = static_cast<float>(g_game->getCurrentLevelWidth()) / g_game->getCurrentLevelHeight();;
+    
     unsigned int viewPortWidth = width;
     unsigned int viewPortHeight = height;
     unsigned int viewPortLeftOffset = 0;

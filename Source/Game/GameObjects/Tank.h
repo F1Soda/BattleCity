@@ -22,13 +22,13 @@ public:
 		Right
 	};
 
-	Tank(const float velocity, const glm::vec2& position, 
-		 glm::vec2& size);
+	Tank(const double velocity, const glm::vec2& position,
+		 glm::vec2& size, const float layer);
 
 	void render() const override;
 	void setOrientation(const EOrientation eOrientation);
 	void move(const bool move);
-	void update(const uint64_t delta) override;
+	void update(const double delta) override;
 
 private:
 
@@ -42,7 +42,7 @@ private:
 	RenderEngine::SpriteAnimator m_spriteAnimator_left;
 	RenderEngine::SpriteAnimator m_spriteAnimator_right;
 	bool m_move;
-	float m_velocity;
+	double m_velocity;
 	glm::vec2 m_moveOffset; // Ориентация движения танака(Этот параметра отвечает за перемещение)
 
 };

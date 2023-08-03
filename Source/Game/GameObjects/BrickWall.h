@@ -13,7 +13,7 @@ class BrickWall : public IGameObject
 {
 public: 
 
-	enum class EBrickWallType
+	enum class EBrickWallType : uint8_t
 	{
 		All,
 		Top,
@@ -26,7 +26,7 @@ public:
 		BottomRight
 	};
 
-	enum class EBrickState
+	enum class EBrickState : uint8_t
 	{
 		All, 
 		TopLeft,
@@ -48,7 +48,7 @@ public:
 		Destroyed
 	};
 
-	enum class EBrickLocation
+	enum class EBrickLocation : uint8_t
 	{
 		TopLeft,
 		TopRight,
@@ -56,9 +56,9 @@ public:
 		BottomRight
 	};
 
-	BrickWall(const EBrickWallType eBrickWallType , const glm::vec2& position, const glm::vec2& size, const float rotation);
+	BrickWall(const EBrickWallType eBrickWallType , const glm::vec2& position, const glm::vec2& size, const float rotation, const float layer);
 	virtual void render() const override;
-	virtual void update(const uint64_t delta) override;
+	virtual void update(const double delta) override;
 
 private:
 	void renderBrick(const EBrickLocation eBrickLocation) const;

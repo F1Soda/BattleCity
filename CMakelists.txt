@@ -38,8 +38,18 @@ add_executable(${PROJECT_NAME}
 	Source/Game/Level.cpp
 	Source/Renderer/spriteAnimator.cpp
 	Source/Renderer/spriteAnimator.h
-	Source/Game/GameObjects/BettonWall.h
-	Source/Game/GameObjects/BettonWall.cpp
+	Source/Game/GameObjects/BetonWall.h
+	Source/Game/GameObjects/BetonWall.cpp
+	Source/Game/GameObjects/Trees.h
+	Source/Game/GameObjects/Trees.cpp
+	Source/Game/GameObjects/Ice.h
+	Source/Game/GameObjects/Ice.cpp
+	Source/Game/GameObjects/Eagle.h
+	Source/Game/GameObjects/Eagle.cpp
+	Source/Game/GameObjects/Water.h
+	Source/Game/GameObjects/Water.cpp
+	Source/Game/GameObjects/Border.h
+	Source/Game/GameObjects/Border.cpp
 	
 	res/resources.json
 

@@ -13,6 +13,7 @@ namespace RenderEngine {
 		bool isCompiled() const { return m_isCompiled; }
 		void use() const; // включение шейдеров
 		void setInt(const std::string& name, const GLint value);
+		void ShaderProgram::setFloat(const std::string& name, const GLfloat value);
 		void setMatrix4(const std::string& name, const glm::mat4& matrix);
 
 		ShaderProgram() = delete; // запрет на создание шейдеров без самих шейдеров

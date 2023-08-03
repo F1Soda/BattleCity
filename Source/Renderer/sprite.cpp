@@ -64,7 +64,7 @@ namespace RenderEngine
 	{
 	}
 
-	void Sprite::render(const glm::vec2& position, const glm::vec2& size, const float rotation, const size_t frameId) const
+	void Sprite::render(const glm::vec2& position, const glm::vec2& size, const float rotation, float layer, const size_t frameId) const
 	{
 		if (m_lastFrameId != frameId)
 		{
@@ -97,7 +97,8 @@ namespace RenderEngine
 		model = glm::scale(model, glm::vec3(size, 1.0f));
 
 		m_pShaderProgram->setMatrix4("modelMat", model);
-		
+		m_pShaderProgram->setFloat("layer", layer);
+
 		glActiveTexture(GL_TEXTURE0);
 		m_pTexture->bind();
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -108,7 +109,7 @@ namespace RenderEngine
 		glDisable(GL_BLEND);
 	}
 
-	uint64_t Sprite::getFrameDuration(const size_t frameID) const
+	double Sprite::getFrameDuration(const size_t frameID) const
 	{
 		return m_frameDescriprtions[frameID].duration;
 	}

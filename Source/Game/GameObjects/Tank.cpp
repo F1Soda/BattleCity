@@ -2,9 +2,9 @@
 #include "../../Renderer/sprite.h"
 #include "../../Resources/ResourceManager.h"
 
-Tank::Tank(const float velocity, const glm::vec2& position,
-           glm::vec2& size)
-           : IGameObject(position, size, 0.f)
+Tank::Tank(const double velocity, const glm::vec2& position,
+           glm::vec2& size, const float layer)
+           : IGameObject(position, size, 0.f, layer)
            
            , m_eOrientation(EOrientation::Top)
            
@@ -29,16 +29,16 @@ void Tank::render() const
     switch (m_eOrientation)
     {
     case Tank::EOrientation::Top:
-        m_pSprite_top->render(m_position, m_size, m_rotation, m_spriteAnimator_top.getCurrentFrame());
+        m_pSprite_top->render(m_position, m_size, m_rotation, m_layer, m_spriteAnimator_top.getCurrentFrame());
         break;
     case Tank::EOrientation::Bottom:
-        m_pSprite_bottom->render(m_position, m_size, m_rotation, m_spriteAnimator_bottom.getCurrentFrame());
+        m_pSprite_bottom->render(m_position, m_size, m_rotation, m_layer, m_spriteAnimator_bottom.getCurrentFrame());
         break;
     case Tank::EOrientation::Left:
-        m_pSprite_left->render(m_position, m_size, m_rotation, m_spriteAnimator_left.getCurrentFrame());
+        m_pSprite_left->render(m_position, m_size, m_rotation, m_layer, m_spriteAnimator_left.getCurrentFrame());
         break;
     case Tank::EOrientation::Right:
-        m_pSprite_right->render(m_position, m_size, m_rotation, m_spriteAnimator_right.getCurrentFrame());
+        m_pSprite_right->render(m_position, m_size, m_rotation, m_layer,m_spriteAnimator_right.getCurrentFrame());
         break;
     default:
         break;
@@ -81,11 +81,13 @@ void Tank::move(const bool move)
     m_move = move;
 }
 
-void Tank::update(const uint64_t delta)
+void Tank::update(const double delta)
 {
     if (m_move)
     {
-        m_position += delta * m_velocity * m_moveOffset;
+        m_position.x += static_cast<float>(delta * m_velocity * m_moveOffset.x);
+        m_position.y += static_cast<float>(delta * m_velocity * m_moveOffset.y);
+
 
         switch (m_eOrientation)
         {
