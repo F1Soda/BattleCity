@@ -2,9 +2,11 @@
 
 #include <array>
 #include <glm/vec2.hpp>
+#include "../Game/GameObjects/Tank.h"
 
-class Tank;
+
 class Level;
+struct GLFWwindow;
 
 class Game
 {
@@ -13,26 +15,28 @@ public:
 	~Game();
 
 	void render();
-	void update(const double delta);
+	void update(GLFWwindow* pWindow, const double delta);
 	void setKey(const int key,const int action);
 	bool init();
 	size_t getCurrentLevelWidth() const;
 	size_t getCurrentLevelHeight() const;
 
-	enum class EMoveState {
-		Idle,
-		Forward,
-		Right,
-		Left,
-		Back
-	};
+	//enum class EMoveState {
+	//	Idle,
+	//	Forward,
+	//	Right,
+	//	Left,
+	//	Back
+	//};
 
-	static EMoveState eMoveStateFirstButton;
-	static EMoveState eMoveStateSecondButton;
+	static Tank::EOrientation eMoveStateFirstButton;
+	static Tank::EOrientation eMoveStateSecondButton;
+	friend void CheckButtonStatus(int key, Tank::EOrientation eCurrentState, GLFWwindow* pWindow);
+	
 	static bool lighting;
 
 private:
-	std::array<bool, 349> m_keys;
+	std::array<char, 349> m_keys;
 
 	enum class EGameState
 	{
@@ -43,5 +47,4 @@ private:
 	EGameState m_eCurrentGameSTate;
 	std::unique_ptr<Tank> m_pTank;
 	std::unique_ptr<Level> m_pLevel;
-
 };

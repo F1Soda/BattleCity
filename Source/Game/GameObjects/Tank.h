@@ -19,7 +19,8 @@ public:
 		Top,
 		Bottom,
 		Left, 
-		Right
+		Right,
+		Idle
 	};
 
 	Tank(const double velocity, const glm::vec2& position,

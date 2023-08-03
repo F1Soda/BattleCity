@@ -25,9 +25,11 @@ std::unique_ptr<Game> g_game = std::make_unique<Game>(g_windowSize);
 
 
 // Прототипы
+void debugLogInConsole(double delta);
 void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int height);
 void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int mode);
 void adding(short channel, double addingValue, bool plus);
+static std::string getStrKeyFromEnumOrientationTank(Tank::EOrientation eValue);
 
 int main(int argc, char** argv)
 {
@@ -70,9 +72,7 @@ int main(int argc, char** argv)
         return -1;
     }
  
-    // Вывод названия видеокарты и версии OpenGL
-    std::cout << "Renderer: " << RenderEngine::Renderer::getRendererStr() << std::endl;
-    std::cout << "OPenGL version: " << RenderEngine::Renderer::getVersionStr() << std::endl;
+    
     
    
     
@@ -93,13 +93,12 @@ int main(int argc, char** argv)
 
             double duration = std::chrono::duration<double, std::milli>(currentTime - lastTime).count();
             lastTime = currentTime;
-            g_game->update(duration);
+            g_game->update(pWindow ,duration);
 
             // Отчищает буфер цвета или кадра
             RenderEngine::Renderer::clear();
 
             //команда отрисовки
-
             if (Game::lighting)
             {
 
@@ -107,12 +106,8 @@ int main(int argc, char** argv)
                 adding(currentChannel, addingValue, flag_plus);
                 
             }
-
-           
-
+            debugLogInConsole(duration);
             g_game->render();
-
-           
 
             // Менает местами буферы
             glfwSwapBuffers(pWindow);
@@ -120,16 +115,12 @@ int main(int argc, char** argv)
             // Обработка всех ивентов из-вне (клава, мышка, изменнеие размера онка)
             glfwPollEvents();
         }
-
         g_game = nullptr;
-
         ResourceManager::unloadAllResources();
     }
     // освобожождениие занятых ресурсов
     glfwTerminate();
-    
     return 0;
-
 }
 
 
@@ -190,4 +181,36 @@ void adding(short channel, double addingValue ,bool plus)
         currentChannel = (currentChannel + 1) % 3;
     }
 
+}
+
+
+
+void debugLogInConsole(double delta)
+{
+    static double timeCounter = 0;
+    timeCounter += delta;
+    if (timeCounter >= 500)
+    {
+        timeCounter = 0;
+        system("cls");
+        // Вывод названия видеокарты и версии OpenGL
+        std::cout << "Renderer: " << RenderEngine::Renderer::getRendererStr() << std::endl;
+        std::cout << "OPenGL version: " << RenderEngine::Renderer::getVersionStr() << std::endl;
+        std::cout << "First button pressed: " << getStrKeyFromEnumOrientationTank(Game::eMoveStateFirstButton) << std::endl;
+        std::cout << "Second button pressed: " << getStrKeyFromEnumOrientationTank(Game::eMoveStateSecondButton) << std::endl;
+    }
+}
+
+static std::string getStrKeyFromEnumOrientationTank(Tank::EOrientation eValue)
+{
+    switch (eValue)
+    {
+    case Tank::EOrientation::Top: return "W (\"Forward\")"; break;
+    case Tank::EOrientation::Bottom: return "S (\"Down\")"; break;
+    case Tank::EOrientation::Left: return "A (\"Left\")"; break;
+    case Tank::EOrientation::Right: return "D (\"Right\")"; break;
+    default:
+        return " Empty ";
+        break;
+    }
 }

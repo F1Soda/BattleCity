@@ -5,21 +5,19 @@
 
 
 
-#include "Game.h"
-#include "GameObjects/Tank.h"
+
+//#include "GameObjects/Tank.h"
 #include "../Resources/ResourceManager.h"
 #include "../Renderer/ShaderProgram.h"
-#include "../Resources/ResourceManager.h"
 #include "../Renderer/Texture2D.h"
 #include "../Renderer/sprite.h"
 #include "Level.h"
-
+#include "Game.h"
 #include <GLFW/glfw3.h>
 
-
 bool Game::lighting = true;
-Game::EMoveState Game::eMoveStateFirstButton = EMoveState::Idle;
-Game::EMoveState Game::eMoveStateSecondButton = EMoveState::Idle;
+Tank::EOrientation Game::eMoveStateFirstButton = Tank::EOrientation::Idle;
+Tank::EOrientation Game::eMoveStateSecondButton = Tank::EOrientation::Idle;
 uint64_t durationBetweenButtonsClicking = 1000000000;
 uint64_t currentFrameTime = 0;
 
@@ -47,7 +45,33 @@ void Game::render()
     //pAnimatedSprite->render();
 
 }
-void Game::update(const double delta)
+
+void CheckButtonStatus(int key, Tank::EOrientation eCurrentState, GLFWwindow* pWindow)
+{
+    int state = glfwGetKey(pWindow, key);
+    if (state == GLFW_PRESS && Game::eMoveStateFirstButton != eCurrentState)
+    {
+        if (Game::eMoveStateFirstButton == Tank::EOrientation::Idle)
+        {
+            Game::eMoveStateFirstButton = eCurrentState;
+        }
+        else if (Game::eMoveStateFirstButton != Tank::EOrientation::Idle)
+        {
+            Game::eMoveStateSecondButton = eCurrentState;
+        }
+    }
+    else if (state == GLFW_RELEASE && Game::eMoveStateFirstButton == eCurrentState)
+    {
+        Game::eMoveStateFirstButton = Game::eMoveStateSecondButton;
+        Game::eMoveStateSecondButton = Tank::EOrientation::Idle;
+    }
+    else if (state == GLFW_RELEASE && Game::eMoveStateSecondButton == eCurrentState)
+    {
+        Game::eMoveStateSecondButton = Tank::EOrientation::Idle;
+    }
+}
+
+void Game::update(GLFWwindow* pWindow,const double delta)
 {
     if (currentFrameTime <= durationBetweenButtonsClicking)
         currentFrameTime += delta;
@@ -59,31 +83,26 @@ void Game::update(const double delta)
 
     if (m_pTank)
     {
-        if (m_keys[GLFW_KEY_W])
+
+        CheckButtonStatus(GLFW_KEY_W, Tank::EOrientation::Top, pWindow);
+        CheckButtonStatus(GLFW_KEY_A, Tank::EOrientation::Left, pWindow);
+        CheckButtonStatus(GLFW_KEY_D, Tank::EOrientation::Right, pWindow);
+        CheckButtonStatus(GLFW_KEY_S, Tank::EOrientation::Bottom, pWindow);
+
+        if (eMoveStateSecondButton != Tank::EOrientation::Idle)
         {
-            m_pTank->setOrientation(Tank::EOrientation::Top);
+            m_pTank->setOrientation(eMoveStateSecondButton);
             m_pTank->move(true);
         }
-        if (m_keys[GLFW_KEY_A])
+        else if (eMoveStateFirstButton != Tank::EOrientation::Idle)
         {
-            m_pTank->setOrientation(Tank::EOrientation::Left);
+            m_pTank->setOrientation(eMoveStateFirstButton);
             m_pTank->move(true);
         }
-        if (m_keys[GLFW_KEY_S])
-        {
-            m_pTank->setOrientation(Tank::EOrientation::Bottom);
-            m_pTank->move(true);
-        }
-        if (m_keys[GLFW_KEY_D])
-        {
-            m_pTank->setOrientation(Tank::EOrientation::Right);
-            m_pTank->move(true);
-        }
-        if (!m_keys[GLFW_KEY_W] && !m_keys[GLFW_KEY_A] && !m_keys[GLFW_KEY_S] && !m_keys[GLFW_KEY_D])
+        else
         {
             m_pTank->move(false);
-        }
-        
+        }    
         m_pTank->update(delta);
     }
 

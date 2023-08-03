@@ -270,10 +270,6 @@ bool ResourceManager::loadJSONResources(const std::string& JSONPath)
 			const std::string shader = currentSprite["shader"].GetString();
 			const std::string subTexture = currentSprite["initialSubTexture"].GetString();
 
-			if (name == "trees")
-			{
-				std::cerr << std::endl;
-			}
 
 			auto pSprite = loadSprite(name, textureAtlas, shader, subTexture);
 			if (!pSprite)
