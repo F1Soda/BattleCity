@@ -4,11 +4,14 @@
 #include <glm/vec2.hpp>
 #include "IGameObject.h"
 #include "../../Renderer/spriteAnimator.h"
+#include "../../System/Timer.h"
 
 namespace RenderEngine
 {
 	class Sprite;
 }
+
+class Bullet;
 
 class Tank : public IGameObject
 {
@@ -23,17 +26,22 @@ public:
 		Idle
 	};
 
-	Tank(const double velocity, const glm::vec2& position,
+	Tank(const double maxVelocity, const glm::vec2& position,
 		 glm::vec2& size, const float layer);
 
 	void render() const override;
 	void setOrientation(const EOrientation eOrientation);
-	void move(const bool move);
 	void update(const double delta) override;
+	double getMaxVelocity() const { return m_maxVelocity; }
+	void setVelocity(const double velocity) override;
+	void fire();
 
 private:
 
 	EOrientation m_eOrientation;
+
+	std::shared_ptr<Bullet> m_pCurrentBullet;
+
 	std::shared_ptr<RenderEngine::Sprite> m_pSprite_top;
 	std::shared_ptr<RenderEngine::Sprite> m_pSprite_bottom;
 	std::shared_ptr<RenderEngine::Sprite> m_pSprite_left;
@@ -42,8 +50,18 @@ private:
 	RenderEngine::SpriteAnimator m_spriteAnimator_bottom;
 	RenderEngine::SpriteAnimator m_spriteAnimator_left;
 	RenderEngine::SpriteAnimator m_spriteAnimator_right;
-	bool m_move;
-	double m_velocity;
-	glm::vec2 m_moveOffset; // Ориентация движения танака(Этот параметра отвечает за перемещение)
+
+	std::shared_ptr<RenderEngine::Sprite> m_pSprite_respawn;
+	RenderEngine::SpriteAnimator m_spriteAnimator_respawn;
+
+	std::shared_ptr<RenderEngine::Sprite> m_pSprite_shield;
+	RenderEngine::SpriteAnimator m_spriteAnimator_shield;
+
+	Timer m_respawnTimer;
+	Timer m_shieldTimer;
+
+	double m_maxVelocity;
+	bool m_isSpawning;
+	bool m_hasShield;
 
 };

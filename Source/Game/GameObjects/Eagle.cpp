@@ -3,10 +3,11 @@
 #include "../../Resources/ResourceManager.h"
 
 Eagle::Eagle(const glm::vec2& position, const glm::vec2& size, const float rotation, const float layer)
-	:IGameObject(position, size, rotation, layer)
+	:IGameObject(position, size, rotation, layer, EObjectType::Eagle)
     , m_sprites{ ResourceManager::getSprite("eagle") ,ResourceManager::getSprite("eagle_dead") }
     , m_eCurrentState(EEagleState::Alive)
 {
+    m_colliders.emplace_back(glm::vec2(0), m_size);
 }
 
 void Eagle::update(const double delta)

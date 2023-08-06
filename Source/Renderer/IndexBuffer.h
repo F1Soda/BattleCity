@@ -7,6 +7,9 @@ namespace RenderEngine
 	class IndexBuffer
 	{
 	public:
+
+		
+
 		IndexBuffer();
 		~IndexBuffer();
 

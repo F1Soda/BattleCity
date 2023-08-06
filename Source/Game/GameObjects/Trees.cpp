@@ -3,7 +3,7 @@
 #include "../../Resources/ResourceManager.h"
 
 Trees::Trees(const glm::vec2& position, const glm::vec2& size, const float rotation, const float layer)
-	:IGameObject(position, size, rotation, layer)
+	:IGameObject(position, size, rotation, layer, EObjectType::Trees)
     , m_pSprite(ResourceManager::getSprite("trees"))
     , m_blockOffsets{ glm::vec2(0, m_size.y / 2.f),
         glm::vec2(m_size.x / 2.f, m_size.y / 2.f),
@@ -24,3 +24,5 @@ void Trees::render() const
     renderBlock(EBlockLocation::BottomLeft);
     renderBlock(EBlockLocation::BottomRight);
 }
+
+

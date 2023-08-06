@@ -21,13 +21,6 @@ public:
 	size_t getCurrentLevelWidth() const;
 	size_t getCurrentLevelHeight() const;
 
-	//enum class EMoveState {
-	//	Idle,
-	//	Forward,
-	//	Right,
-	//	Left,
-	//	Back
-	//};
 
 	static Tank::EOrientation eMoveStateFirstButton;
 	static Tank::EOrientation eMoveStateSecondButton;
@@ -45,6 +38,6 @@ private:
 	};
 	glm::ivec2 m_windowSize;
 	EGameState m_eCurrentGameSTate;
-	std::unique_ptr<Tank> m_pTank;
-	std::unique_ptr<Level> m_pLevel;
+	std::shared_ptr<Tank> m_pTank;
+	std::shared_ptr<Level> m_pLevel;
 };

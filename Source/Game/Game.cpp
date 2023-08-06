@@ -13,13 +13,14 @@
 #include "../Renderer/sprite.h"
 #include "Level.h"
 #include "Game.h"
+#include "../Physics/PhysicsEngine.h"
 #include <GLFW/glfw3.h>
 
 bool Game::lighting = true;
 Tank::EOrientation Game::eMoveStateFirstButton = Tank::EOrientation::Idle;
 Tank::EOrientation Game::eMoveStateSecondButton = Tank::EOrientation::Idle;
-uint64_t durationBetweenButtonsClicking = 1000000000;
-uint64_t currentFrameTime = 0;
+double durationBetweenButtonsClicking = 1000000000;
+double currentFrameTime = 0;
 
 Game::Game(const glm::ivec2& windowSize)
 	: m_eCurrentGameSTate(EGameState::Active)
@@ -92,17 +93,23 @@ void Game::update(GLFWwindow* pWindow,const double delta)
         if (eMoveStateSecondButton != Tank::EOrientation::Idle)
         {
             m_pTank->setOrientation(eMoveStateSecondButton);
-            m_pTank->move(true);
+            m_pTank->setVelocity(m_pTank->getMaxVelocity());
         }
         else if (eMoveStateFirstButton != Tank::EOrientation::Idle)
         {
+            m_pTank->setVelocity(m_pTank->getMaxVelocity());
             m_pTank->setOrientation(eMoveStateFirstButton);
-            m_pTank->move(true);
         }
         else
         {
-            m_pTank->move(false);
+            m_pTank->setVelocity(0);
         }    
+
+        if (m_keys[GLFW_KEY_SPACE])
+        {
+            m_pTank->fire();
+        }
+
         m_pTank->update(delta);
     }
 
@@ -112,6 +119,8 @@ void Game::update(GLFWwindow* pWindow,const double delta)
         lighting = !lighting;
         std::cout << "Turn " << (Game::lighting ? "on " : "off") << " lighting" << std::endl;
     }
+
+    
 
     //pAnimatedSprite->update(delta);
 
@@ -145,10 +154,10 @@ bool Game::init()
         return false;
     }
 
-    m_pLevel = std::make_unique<Level>(ResourceManager::getLevels()[0]);
+    m_pLevel = std::make_shared<Level>(ResourceManager::getLevels()[0]);
     m_windowSize.x = static_cast<int>(m_pLevel->getLevelWidth());
     m_windowSize.y = static_cast<int>(m_pLevel->getLevelHeight());
-
+    Physics::PhysicsEngine::setCurrentLevel(m_pLevel);
 
     glm::mat4 projectionMatrix = glm::ortho(0.0f, static_cast<float>(m_windowSize.x), 0.0f, static_cast<float>(m_windowSize.y), -100.0f, 100.0f);
 
@@ -156,8 +165,8 @@ bool Game::init()
     pSpriteShaderProgram->setInt("tex", 0);
     pSpriteShaderProgram->setMatrix4("projectionMat", projectionMatrix);
 
-    m_pTank = std::make_unique<Tank>(0.05, m_pLevel->getPlayerRespawn_1(), glm::vec2(Level::BLOCK_SIZE, Level::BLOCK_SIZE), 0.f);
-
+    m_pTank = std::make_shared<Tank>(0.05, m_pLevel->getPlayerRespawn_1(), glm::vec2(Level::BLOCK_SIZE, Level::BLOCK_SIZE), 0.f);
+    Physics::PhysicsEngine::addDynamicGameObject(m_pTank);
 
    
 

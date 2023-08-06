@@ -10,14 +10,15 @@
 #include "Game/Game.h"
 #include"Resources/ResourceManager.h"
 #include "Renderer/Renderer.h"
+#include "Physics/PhysicsEngine.h"
 
 
 
 enum { Blue=2, Red=0, Green=1 };
 short currentChannel = Blue;
-double arrCol[3] = { 1.0, 0.0, 0.0 };
+float arrCol[3] = { 1.0f, 0.0f, 0.0f };
 bool flag_plus = true;
-double addingValue = 0.005;
+float addingValue = 0.005f;
 
 glm::ivec2 g_windowSize(13*16, 14*16);
 std::unique_ptr<Game> g_game = std::make_unique<Game>(g_windowSize);
@@ -28,7 +29,7 @@ std::unique_ptr<Game> g_game = std::make_unique<Game>(g_windowSize);
 void debugLogInConsole(double delta);
 void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int height);
 void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int mode);
-void adding(short channel, double addingValue, bool plus);
+void adding(short channel, float addingValue, bool plus);
 static std::string getStrKeyFromEnumOrientationTank(Tank::EOrientation eValue);
 
 int main(int argc, char** argv)
@@ -81,7 +82,9 @@ int main(int argc, char** argv)
     {
         // При запуске программы в функцыю main передаётся путь к exe.файлу
         ResourceManager::setExecutablePath(argv[0]);
+        Physics::PhysicsEngine::init();
         g_game->init();
+
         glfwSetWindowSize(pWindow, static_cast<int>(3*g_game->getCurrentLevelWidth()), static_cast<int>(3 * g_game->getCurrentLevelHeight()));
         
         auto lastTime = std::chrono::high_resolution_clock::now();
@@ -94,6 +97,7 @@ int main(int argc, char** argv)
             double duration = std::chrono::duration<double, std::milli>(currentTime - lastTime).count();
             lastTime = currentTime;
             g_game->update(pWindow ,duration);
+            Physics::PhysicsEngine::update(duration);
 
             // Отчищает буфер цвета или кадра
             RenderEngine::Renderer::clear();
@@ -106,7 +110,9 @@ int main(int argc, char** argv)
                 adding(currentChannel, addingValue, flag_plus);
                 
             }
-            debugLogInConsole(duration);
+            // -------------- debug mode -------------- \\ 
+            //debugLogInConsole(duration);
+
             g_game->render();
 
             // Менает местами буферы
@@ -115,6 +121,7 @@ int main(int argc, char** argv)
             // Обработка всех ивентов из-вне (клава, мышка, изменнеие размера онка)
             glfwPollEvents();
         }
+        Physics::PhysicsEngine::terminate();
         g_game = nullptr;
         ResourceManager::unloadAllResources();
     }
@@ -163,7 +170,7 @@ void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int
     g_game->setKey(key, action);
 }
 
-void adding(short channel, double addingValue ,bool plus)
+void adding(short channel, float addingValue ,bool plus)
 {
     if (plus)
     {
@@ -183,8 +190,6 @@ void adding(short channel, double addingValue ,bool plus)
 
 }
 
-
-
 void debugLogInConsole(double delta)
 {
     static double timeCounter = 0;
@@ -198,6 +203,7 @@ void debugLogInConsole(double delta)
         std::cout << "OPenGL version: " << RenderEngine::Renderer::getVersionStr() << std::endl;
         std::cout << "First button pressed: " << getStrKeyFromEnumOrientationTank(Game::eMoveStateFirstButton) << std::endl;
         std::cout << "Second button pressed: " << getStrKeyFromEnumOrientationTank(Game::eMoveStateSecondButton) << std::endl;
+
     }
 }
 

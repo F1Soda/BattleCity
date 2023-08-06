@@ -50,10 +50,19 @@ add_executable(${PROJECT_NAME}
 	Source/Game/GameObjects/Water.cpp
 	Source/Game/GameObjects/Border.h
 	Source/Game/GameObjects/Border.cpp
-	
+	Source/System/Timer.h
+	Source/System/Timer.cpp
+	Source/Physics/PhysicsEngine.h
+	Source/Physics/PhysicsEngine.cpp
+	Source/Game/GameObjects/Bullet.h
+	Source/Game/GameObjects/Bullet.cpp
+
 	res/resources.json
 
 )
+
+	
+
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)

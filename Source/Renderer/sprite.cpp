@@ -83,9 +83,6 @@ namespace RenderEngine
 			m_textureCoordsBuffer.update(textureCoords, 2 * 4 * sizeof(GLfloat));
 
 		}
-
-		
-
 		m_pShaderProgram->use();
 
 		glm::mat4 model(1.0f);
