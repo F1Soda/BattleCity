@@ -34,8 +34,6 @@ add_executable(${PROJECT_NAME}
 	Source/Game/GameObjects/IGameObject.cpp
 	Source/Game/GameObjects/BrickWall.h
 	Source/Game/GameObjects/BrickWall.cpp
-	Source/Game/Level.h
-	Source/Game/Level.cpp
 	Source/Renderer/spriteAnimator.cpp
 	Source/Renderer/spriteAnimator.h
 	Source/Game/GameObjects/BetonWall.h
@@ -56,10 +54,17 @@ add_executable(${PROJECT_NAME}
 	Source/Physics/PhysicsEngine.cpp
 	Source/Game/GameObjects/Bullet.h
 	Source/Game/GameObjects/Bullet.cpp
-
-	res/resources.json
-
+	Source/Game/GameStates/IGameState.h
+	Source/Game/GameStates/StartScreen.h
+	Source/Game/GameStates/StartScreen.cpp
+	Source/Game/GameStates/Level.h
+	Source/Game/GameStates/Level.cpp
+	Source/Game/AIComponent.h
+	Source/Game/AIComponent.cpp
+	
 )
+
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 
 	
 

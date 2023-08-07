@@ -2,116 +2,49 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/vec2.hpp>
 #include <glm/mat4x4.hpp>
-
-
-
-
-//#include "GameObjects/Tank.h"
 #include "../Resources/ResourceManager.h"
 #include "../Renderer/ShaderProgram.h"
 #include "../Renderer/Texture2D.h"
 #include "../Renderer/sprite.h"
-#include "Level.h"
+#include "../Game/GameStates/Level.h"
+#include "../Game/GameStates/StartScreen.h"
 #include "Game.h"
 #include "../Physics/PhysicsEngine.h"
+#include "../Renderer/Renderer.h"
 #include <GLFW/glfw3.h>
 
 bool Game::lighting = true;
-Tank::EOrientation Game::eMoveStateFirstButton = Tank::EOrientation::Idle;
-Tank::EOrientation Game::eMoveStateSecondButton = Tank::EOrientation::Idle;
-double durationBetweenButtonsClicking = 1000000000;
+
+GLFWwindow* Game::pWindow;
+
+double durationBetweenButtonsClicking = 1000;
 double currentFrameTime = 0;
 
-Game::Game(const glm::ivec2& windowSize)
-	: m_eCurrentGameSTate(EGameState::Active)
+// Prototypes
+
+Game::Game(const glm::uvec2& windowSize)
+    : m_eCurrentGameState(EGameState::StartScreen)
     , m_windowSize(windowSize)
+    , m_currentLevelIndex(0)
 {
 	m_keys.fill(false);
+    
 }
 Game::~Game()
 {
-
 }
 
 void Game::render()
 {
-    //ResourceManager::getAnimatedSprite("NewAnimatedSprite")->render();
-    
-    if (m_pTank)
-        m_pTank->render();
-    
-    if(m_pLevel)
-        m_pLevel->render();
-
-    //pAnimatedSprite->render();
-
-}
-
-void CheckButtonStatus(int key, Tank::EOrientation eCurrentState, GLFWwindow* pWindow)
-{
-    int state = glfwGetKey(pWindow, key);
-    if (state == GLFW_PRESS && Game::eMoveStateFirstButton != eCurrentState)
-    {
-        if (Game::eMoveStateFirstButton == Tank::EOrientation::Idle)
-        {
-            Game::eMoveStateFirstButton = eCurrentState;
-        }
-        else if (Game::eMoveStateFirstButton != Tank::EOrientation::Idle)
-        {
-            Game::eMoveStateSecondButton = eCurrentState;
-        }
-    }
-    else if (state == GLFW_RELEASE && Game::eMoveStateFirstButton == eCurrentState)
-    {
-        Game::eMoveStateFirstButton = Game::eMoveStateSecondButton;
-        Game::eMoveStateSecondButton = Tank::EOrientation::Idle;
-    }
-    else if (state == GLFW_RELEASE && Game::eMoveStateSecondButton == eCurrentState)
-    {
-        Game::eMoveStateSecondButton = Tank::EOrientation::Idle;
-    }
+    m_pCurrentGameState->render();
 }
 
 void Game::update(GLFWwindow* pWindow,const double delta)
 {
     if (currentFrameTime <= durationBetweenButtonsClicking)
         currentFrameTime += delta;
-
-    if (m_pLevel)
-    {
-        m_pLevel->update(delta);
-    }
-
-    if (m_pTank)
-    {
-
-        CheckButtonStatus(GLFW_KEY_W, Tank::EOrientation::Top, pWindow);
-        CheckButtonStatus(GLFW_KEY_A, Tank::EOrientation::Left, pWindow);
-        CheckButtonStatus(GLFW_KEY_D, Tank::EOrientation::Right, pWindow);
-        CheckButtonStatus(GLFW_KEY_S, Tank::EOrientation::Bottom, pWindow);
-
-        if (eMoveStateSecondButton != Tank::EOrientation::Idle)
-        {
-            m_pTank->setOrientation(eMoveStateSecondButton);
-            m_pTank->setVelocity(m_pTank->getMaxVelocity());
-        }
-        else if (eMoveStateFirstButton != Tank::EOrientation::Idle)
-        {
-            m_pTank->setVelocity(m_pTank->getMaxVelocity());
-            m_pTank->setOrientation(eMoveStateFirstButton);
-        }
-        else
-        {
-            m_pTank->setVelocity(0);
-        }    
-
-        if (m_keys[GLFW_KEY_SPACE])
-        {
-            m_pTank->fire();
-        }
-
-        m_pTank->update(delta);
-    }
+    m_pCurrentGameState->update(delta);
+    m_pCurrentGameState->processInput(m_keys);
 
     if (m_keys[GLFW_KEY_O] && currentFrameTime >= durationBetweenButtonsClicking)
     {
@@ -119,11 +52,7 @@ void Game::update(GLFWwindow* pWindow,const double delta)
         lighting = !lighting;
         std::cout << "Turn " << (Game::lighting ? "on " : "off") << " lighting" << std::endl;
     }
-
-    
-
     //pAnimatedSprite->update(delta);
-
 }
 void Game::setKey(const int key, const int action)
 {
@@ -133,54 +62,76 @@ bool Game::init()
 {
     ResourceManager::loadJSONResources("res/resources.json");
 
-    auto pSpriteShaderProgram = ResourceManager::getShaderProgram("spriteShader");
-    if (!pSpriteShaderProgram)
+    m_pSpriteShaderProgram = ResourceManager::getShaderProgram("spriteShader");
+    if (!m_pSpriteShaderProgram)
     {
         std::cerr << "Can't find shader program: " << "spriteShader" << std::endl;
         return false;
     }
-
-    auto pTextureAtlas = ResourceManager::getTexture("mapTextureAtlas_16x16");
-    if (!pTextureAtlas)
-    {
-        std::cerr << "Can't find texture atlas: " << "mapTextureAtlas" << std::endl;
-        return false;
-    }
-
-    auto pTanksTextureAtlas = ResourceManager::getTexture("tanksTextureAtlas");
-    if (!pTanksTextureAtlas)
-    {
-        std::cerr << "Can't find texture atlas: " << "tanksTextureAtlas" << std::endl;
-        return false;
-    }
-
-    m_pLevel = std::make_shared<Level>(ResourceManager::getLevels()[0]);
-    m_windowSize.x = static_cast<int>(m_pLevel->getLevelWidth());
-    m_windowSize.y = static_cast<int>(m_pLevel->getLevelHeight());
-    Physics::PhysicsEngine::setCurrentLevel(m_pLevel);
-
-    glm::mat4 projectionMatrix = glm::ortho(0.0f, static_cast<float>(m_windowSize.x), 0.0f, static_cast<float>(m_windowSize.y), -100.0f, 100.0f);
-
-    pSpriteShaderProgram->use();
-    pSpriteShaderProgram->setInt("tex", 0);
-    pSpriteShaderProgram->setMatrix4("projectionMat", projectionMatrix);
-
-    m_pTank = std::make_shared<Tank>(0.05, m_pLevel->getPlayerRespawn_1(), glm::vec2(Level::BLOCK_SIZE, Level::BLOCK_SIZE), 0.f);
-    Physics::PhysicsEngine::addDynamicGameObject(m_pTank);
-
-   
+    m_pSpriteShaderProgram->use();
+    m_pSpriteShaderProgram->setInt("tex", 0);
+    m_pCurrentGameState = std::make_shared<StartScreen>(ResourceManager::getStartScreen(), this);
+    setWindowSize(m_windowSize);
+    updateViewport();
 
     return true;
 
 }
 
-size_t Game::getCurrentLevelWidth() const
+unsigned int Game::getCurrentWidth() const
 {
-    return m_pLevel->getLevelWidth();
+    return m_pCurrentGameState->getStateWidth();
 }
-size_t Game::getCurrentLevelHeight() const
+unsigned int Game::getCurrentHeight() const
 {
-    return m_pLevel->getLevelHeight();
+    return m_pCurrentGameState->getStateHeight();
+} 
+ 
+void Game::startNewLevel(const size_t level, const EGameMode eGameMode)
+{
+    m_currentLevelIndex = level;
+    auto pLevel = std::make_shared<Level>(ResourceManager::getLevels()[m_currentLevelIndex], eGameMode);
+    Physics::PhysicsEngine::setCurrentLevel(pLevel);
+    m_pCurrentGameState = pLevel;
+    updateViewport();
 }
 
+void Game::setWindowSize(const glm::uvec2 windowSize)
+{
+    m_windowSize = windowSize;
+    updateViewport();
+}
+
+void Game::updateViewport()
+{
+    const float level_aspect_ratio = static_cast<float>(getCurrentWidth()) /getCurrentHeight();;
+
+    unsigned int viewPortWidth = m_windowSize.x;
+    unsigned int viewPortHeight = m_windowSize.y;
+    unsigned int viewPortLeftOffset = 0;
+    unsigned int viewPortBottomOffset = 0;
+
+    if (static_cast<float>(m_windowSize.x) / m_windowSize.y > level_aspect_ratio)
+    {
+        viewPortWidth = static_cast<int>(m_windowSize.y * level_aspect_ratio);
+        viewPortLeftOffset = (m_windowSize.x - viewPortWidth) / 2;
+    }
+    else
+    {
+        viewPortHeight = static_cast<int>(m_windowSize.x / level_aspect_ratio);
+        viewPortBottomOffset = (m_windowSize.y - viewPortHeight) / 2;
+    }
+
+    // Показываме OpenGL где мы хотим рисовать. 
+    // Первые два параметра -- кординаты начала полотна, затем ширина и высота
+    RenderEngine::Renderer::setViewport(viewPortWidth, viewPortHeight, viewPortLeftOffset, viewPortBottomOffset);
+
+    glm::mat4 projectionMatrix = glm::ortho(0.0f, static_cast<float>(getCurrentWidth()), 0.0f, static_cast<float>(getCurrentHeight()), -100.0f, 100.0f);
+    m_pSpriteShaderProgram->setMatrix4("projectionMat", projectionMatrix);
+}
+
+void Game::nextLevel(const EGameMode eGameMode)
+{
+    startNewLevel(++m_currentLevelIndex, eGameMode);
+}
 

@@ -15,7 +15,7 @@ namespace RenderEngine
 
 	void VertexBufferLayout::addElementLayoutFloat(const unsigned int count, const bool normilized)
 	{
-		VertexBufferLayoutElement tempStruct{ count, GL_FLOAT, normilized, static_cast<GLint>(count * sizeof(GLfloat)) };
+		VertexBufferLayoutElement tempStruct{ static_cast<GLint>(count), GL_FLOAT, normilized, static_cast<unsigned int>(count * sizeof(GLfloat)) };
 		m_layoutElements.push_back(tempStruct);
 		m_stride += m_layoutElements.back().size;
 	}

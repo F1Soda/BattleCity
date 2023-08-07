@@ -1,17 +1,31 @@
 #include "Level.h"
 #include <iostream>
-#include "GameObjects/BrickWall.h"
-#include "GameObjects/BetonWall.h"
-#include "GameObjects/Trees.h"
-#include "GameObjects/Ice.h"
-#include "GameObjects/Eagle.h"
-#include "GameObjects/Water.h"
-#include "GameObjects/BetonWall.h"
-#include "GameObjects/Border.h"
+#include "../GameObjects/BrickWall.h"
+#include "../GameObjects/BetonWall.h"
+#include "../GameObjects/Trees.h"
+#include "../GameObjects/Ice.h"
+#include "../GameObjects/Eagle.h"
+#include "../GameObjects/Water.h"
+#include "../GameObjects/BetonWall.h"
+#include "../GameObjects/Border.h"
+#include "../GameObjects/Tank.h"
+#include "../Game.h"
 #include <algorithm>
 #include <cmath>
+#include <GLFW/glfw3.h>
 
 
+//#define GLFW_KEY_W 87
+//#define GLFW_KEY_A 65
+//#define GLFW_KEY_S 83
+//#define GLFW_KEY_D 68
+//#define GLFW_KEY_SPACE 32
+
+Tank::EOrientation Level::eMoveStateFirstButtonFirstPlayer = Tank::EOrientation::Idle;
+Tank::EOrientation Level::eMoveStateSecondButtonFirstPlayer = Tank::EOrientation::Idle;
+
+Tank::EOrientation Level::eMoveStateSecondButtonSecondPlayer = Tank::EOrientation::Idle;
+Tank::EOrientation Level::eMoveStateFirstButtonSecondPlayer = Tank::EOrientation::Idle;
 
 std::shared_ptr<IGameObject> createGameObjectFromDiscription(const char description, const glm::vec2& position, const glm::vec2& size, const float rotation)
 {
@@ -63,7 +77,8 @@ std::shared_ptr<IGameObject> createGameObjectFromDiscription(const char descript
 }
 
 
-Level::Level(const std::vector<std::string>& levelDescription)
+Level::Level(const std::vector<std::string>& levelDescription, const Game::EGameMode eGameMode)
+	: m_eGameMode(eGameMode)
 {
 	if (levelDescription.empty())
 	{
@@ -145,6 +160,21 @@ void Level::render() const
 			currentMapObject->render();
 		}
 	}
+
+	switch (m_eGameMode)
+	{
+	case Game::EGameMode::TwoPlayer:
+		m_pTank2->render();
+		[[fallthrough]]; // преднамеренно не указано break, чтобы компилятор не ругался
+	case Game::EGameMode::OnePlayer:
+		m_pTank1->render();
+	}
+
+	for (const auto& currentTank : m_EnemyTanks)
+	{
+		currentTank->render();
+	}
+
 }
 
 void Level::update(const double delta)
@@ -156,16 +186,31 @@ void Level::update(const double delta)
 			currentMapObject->update(delta);
 		}
 	}
+
+	switch (m_eGameMode)
+	{
+	case Game::EGameMode::TwoPlayer:
+		m_pTank2->update(delta);
+		[[fallthrough]]; // преднамеренно не указано break, чтобы компилятор не ругался
+	case Game::EGameMode::OnePlayer:
+		m_pTank1->update(delta);
+	}
+
+	for (const auto& currentTank : m_EnemyTanks)
+	{
+		currentTank->update(delta);
+	}
+
 }
 
-size_t Level::getLevelWidth() const
+unsigned int Level::getStateWidth() const
 {
-	return (m_widthBlocks + 3) * BLOCK_SIZE;
+	return static_cast<unsigned int>((m_widthBlocks + 3)) * BLOCK_SIZE;
 }
 
-size_t Level::getLevelHeight() const
+unsigned int Level::getStateHeight() const
 {
-	return (m_heightBlocks + 1) * BLOCK_SIZE;
+	return static_cast<unsigned int>((m_heightBlocks + 1)) * BLOCK_SIZE;
 }
 
 std::vector<std::shared_ptr<IGameObject>> Level::getObjectsInArea(const glm::vec2& bottomLeft, const glm::vec2& topRight)
@@ -213,3 +258,143 @@ std::vector<std::shared_ptr<IGameObject>> Level::getObjectsInArea(const glm::vec
 
 	return output;
 }
+
+void Level::processInput(std::array<char, 349>& keys)
+{
+
+	switch (m_eGameMode)
+	{
+	case Game::EGameMode::TwoPlayer:
+		CheckButtonStatusSecondPlayer(GLFW_KEY_UP, Tank::EOrientation::Top);
+		CheckButtonStatusSecondPlayer(GLFW_KEY_LEFT, Tank::EOrientation::Left);
+		CheckButtonStatusSecondPlayer(GLFW_KEY_RIGHT, Tank::EOrientation::Right);
+		CheckButtonStatusSecondPlayer(GLFW_KEY_DOWN, Tank::EOrientation::Bottom);
+
+		if (eMoveStateSecondButtonSecondPlayer != Tank::EOrientation::Idle)
+		{
+			m_pTank2->setOrientation(eMoveStateSecondButtonSecondPlayer);
+			m_pTank2->setVelocity(m_pTank2->getMaxVelocity());
+		}
+		else if (eMoveStateFirstButtonSecondPlayer != Tank::EOrientation::Idle)
+		{
+			m_pTank2->setVelocity(m_pTank2->getMaxVelocity());
+			m_pTank2->setOrientation(eMoveStateFirstButtonSecondPlayer);
+		}
+		else
+		{
+			m_pTank2->setVelocity(0);
+		}
+
+		if (keys[GLFW_KEY_RIGHT_SHIFT])
+		{
+			m_pTank2->fire();
+		}
+		[[fallthrough]]; // преднамеренно не указано break, чтобы компилятор не ругался
+	case Game::EGameMode::OnePlayer:
+		CheckButtonStatusFirstPlayer(GLFW_KEY_W, Tank::EOrientation::Top);
+		CheckButtonStatusFirstPlayer(GLFW_KEY_A, Tank::EOrientation::Left);
+		CheckButtonStatusFirstPlayer(GLFW_KEY_D, Tank::EOrientation::Right);
+		CheckButtonStatusFirstPlayer(GLFW_KEY_S, Tank::EOrientation::Bottom);
+
+		if (eMoveStateSecondButtonFirstPlayer != Tank::EOrientation::Idle)
+		{
+			m_pTank1->setOrientation(eMoveStateSecondButtonFirstPlayer);
+			m_pTank1->setVelocity(m_pTank1->getMaxVelocity());
+		}
+		else if (eMoveStateFirstButtonFirstPlayer != Tank::EOrientation::Idle)
+		{
+			m_pTank1->setVelocity(m_pTank1->getMaxVelocity());
+			m_pTank1->setOrientation(eMoveStateFirstButtonFirstPlayer);
+		}
+		else
+		{
+			m_pTank1->setVelocity(0);
+		}
+
+		if (keys[GLFW_KEY_SPACE])
+		{
+			m_pTank1->fire();
+		}
+	}
+
+	
+
+}
+
+void CheckButtonStatusFirstPlayer(int key, Tank::EOrientation eCurrentState)
+{
+	int state = glfwGetKey(Game::pWindow, key);
+	if (state == GLFW_PRESS && Level::eMoveStateFirstButtonFirstPlayer != eCurrentState)
+	{
+		if (Level::eMoveStateFirstButtonFirstPlayer == Tank::EOrientation::Idle)
+		{
+			Level::eMoveStateFirstButtonFirstPlayer = eCurrentState;
+		}
+		else if (Level::eMoveStateFirstButtonFirstPlayer != Tank::EOrientation::Idle)
+		{
+			Level::eMoveStateSecondButtonFirstPlayer = eCurrentState;
+		}
+	}
+	else if (state == GLFW_RELEASE && Level::eMoveStateFirstButtonFirstPlayer == eCurrentState)
+	{
+		Level::eMoveStateFirstButtonFirstPlayer = Level::eMoveStateSecondButtonFirstPlayer;
+		Level::eMoveStateSecondButtonFirstPlayer = Tank::EOrientation::Idle;
+	}
+	else if (state == GLFW_RELEASE && Level::eMoveStateSecondButtonFirstPlayer == eCurrentState)
+	{
+		Level::eMoveStateSecondButtonFirstPlayer = Tank::EOrientation::Idle;
+	}
+}
+
+void CheckButtonStatusSecondPlayer(int key, Tank::EOrientation eCurrentState)
+{
+	int state = glfwGetKey(Game::pWindow, key);
+	if (state == GLFW_PRESS && Level::eMoveStateFirstButtonSecondPlayer != eCurrentState)
+	{
+		if (Level::eMoveStateFirstButtonSecondPlayer == Tank::EOrientation::Idle)
+		{
+			Level::eMoveStateFirstButtonSecondPlayer = eCurrentState;
+		}
+		else if (Level::eMoveStateFirstButtonSecondPlayer != Tank::EOrientation::Idle)
+		{
+			Level::eMoveStateSecondButtonSecondPlayer = eCurrentState;
+		}
+	}
+	else if (state == GLFW_RELEASE && Level::eMoveStateFirstButtonSecondPlayer == eCurrentState)
+	{
+		Level::eMoveStateFirstButtonSecondPlayer = Level::eMoveStateSecondButtonSecondPlayer;
+		Level::eMoveStateSecondButtonSecondPlayer = Tank::EOrientation::Idle;
+	}
+	else if (state == GLFW_RELEASE && Level::eMoveStateSecondButtonSecondPlayer == eCurrentState)
+	{
+		Level::eMoveStateSecondButtonSecondPlayer = Tank::EOrientation::Idle;
+	}
+}
+
+void Level::initLevel()
+{
+	switch (m_eGameMode)
+	{
+	case Game::EGameMode::TwoPlayer:
+		m_pTank2 = std::make_shared<Tank>(Tank::ETankType::Player2Green_type1, false, true, Tank::EOrientation::Top, 0.05, getPlayerRespawn_2(), glm::vec2(Level::BLOCK_SIZE, Level::BLOCK_SIZE), 0.f);
+		Physics::PhysicsEngine::addDynamicGameObject(m_pTank2);
+		[[fallthrough]]; // преднамеренно не указано break, чтобы компилятор не ругался
+	case Game::EGameMode::OnePlayer:
+		m_pTank1 = std::make_shared<Tank>(Tank::ETankType::Player1Yellow_type1, false, true, Tank::EOrientation::Top, 0.05, getPlayerRespawn_1(), glm::vec2(Level::BLOCK_SIZE, Level::BLOCK_SIZE), 0.f);
+		Physics::PhysicsEngine::addDynamicGameObject(m_pTank1);
+	}
+
+	
+	
+
+	m_EnemyTanks.emplace(std::make_shared<Tank>(Tank::ETankType::EnemyWhite_type1, true, false, Tank::EOrientation::Bottom,0.05, getEnemyRespawn_1(), glm::vec2(Level::BLOCK_SIZE, Level::BLOCK_SIZE), 0.f));
+	m_EnemyTanks.emplace(std::make_shared<Tank>(Tank::ETankType::EnemyWhite_type2, true, false, Tank::EOrientation::Bottom, 0.05, getEnemyRespawn_2(), glm::vec2(Level::BLOCK_SIZE, Level::BLOCK_SIZE), 0.f));
+	m_EnemyTanks.emplace(std::make_shared<Tank>(Tank::ETankType::EnemyWhite_type4, true, false, Tank::EOrientation::Bottom, 0.05, getEnemyRespawn_3(), glm::vec2(Level::BLOCK_SIZE, Level::BLOCK_SIZE), 0.f));
+
+	for (const auto& currentTank : m_EnemyTanks)
+	{
+		Physics::PhysicsEngine::addDynamicGameObject(currentTank);
+	}
+
+}
+

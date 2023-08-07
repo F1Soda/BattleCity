@@ -2,42 +2,59 @@
 
 #include <array>
 #include <glm/vec2.hpp>
-#include "../Game/GameObjects/Tank.h"
 
 
-class Level;
+class IGameState;
 struct GLFWwindow;
+
+namespace RenderEngine
+{
+	class ShaderProgram;
+}
 
 class Game
 {
 public:
-	Game(const glm::ivec2& windowSize);
+	enum class EGameMode
+	{
+		OnePlayer,
+		TwoPlayer
+	};
+
+	Game(const glm::uvec2& windowSize);
 	~Game();
 
 	void render();
 	void update(GLFWwindow* pWindow, const double delta);
 	void setKey(const int key,const int action);
 	bool init();
-	size_t getCurrentLevelWidth() const;
-	size_t getCurrentLevelHeight() const;
+	unsigned int getCurrentWidth() const;
+	unsigned int getCurrentHeight() const;
+	void startNewLevel(const size_t level, const EGameMode eGameMode);
+	void setWindowSize(const glm::uvec2 windowSize);
+	void updateViewport();
+	void nextLevel(const EGameMode eGameMode);
 
-
-	static Tank::EOrientation eMoveStateFirstButton;
-	static Tank::EOrientation eMoveStateSecondButton;
-	friend void CheckButtonStatus(int key, Tank::EOrientation eCurrentState, GLFWwindow* pWindow);
-	
 	static bool lighting;
+	static GLFWwindow* pWindow;
 
 private:
 	std::array<char, 349> m_keys;
 
 	enum class EGameState
 	{
-		Active,
-		Pause
+		StartScreen,
+		LevelStart,
+		Level,
+		Pause, 
+		Scores, 
+		GameOver
 	};
 	glm::ivec2 m_windowSize;
-	EGameState m_eCurrentGameSTate;
-	std::shared_ptr<Tank> m_pTank;
-	std::shared_ptr<Level> m_pLevel;
+	EGameState m_eCurrentGameState;
+
+	std::shared_ptr<IGameState> m_pCurrentGameState;
+	std::shared_ptr<RenderEngine::ShaderProgram> m_pSpriteShaderProgram;
+	size_t m_currentLevelIndex;
+
 };

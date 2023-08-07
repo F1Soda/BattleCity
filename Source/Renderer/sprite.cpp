@@ -14,6 +14,7 @@ namespace RenderEngine
 		: m_pTexture(std::move(pTexture))
 		, m_pShaderProgram(std::move(pShaderProgram))
 		, m_lastFrameId(0) 
+		, m_VAO(0)
 	{
 		const GLfloat vertexCoords[] =
 		{

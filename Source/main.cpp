@@ -8,6 +8,7 @@
 
 
 #include "Game/Game.h"
+#include "Game/GameStates/Level.h"
 #include"Resources/ResourceManager.h"
 #include "Renderer/Renderer.h"
 #include "Physics/PhysicsEngine.h"
@@ -20,7 +21,10 @@ float arrCol[3] = { 1.0f, 0.0f, 0.0f };
 bool flag_plus = true;
 float addingValue = 0.005f;
 
-glm::ivec2 g_windowSize(13*16, 14*16);
+static constexpr unsigned int SCALE = 3;
+static constexpr unsigned int BLOCK_SIZE = 16;
+
+glm::uvec2 g_windowSize(SCALE*16* BLOCK_SIZE, SCALE * 15* BLOCK_SIZE);
 std::unique_ptr<Game> g_game = std::make_unique<Game>(g_windowSize);
 
 
@@ -52,8 +56,8 @@ int main(int argc, char** argv)
 
 
     /* Create a windowed mode window and its OpenGL context */
-    GLFWwindow* pWindow = glfwCreateWindow(g_windowSize.x, g_windowSize.y, "Battle City", nullptr, nullptr);
-    if (!pWindow)
+    Game::pWindow = glfwCreateWindow(g_windowSize.x, g_windowSize.y, "Battle City", nullptr, nullptr);
+    if (!Game::pWindow)
     {
         std::cout << "glfwCreateWindow() failed" << std::endl;
         glfwTerminate();
@@ -61,11 +65,11 @@ int main(int argc, char** argv)
     }
     
     // Назначение функций для Callback-оф
-    glfwSetWindowSizeCallback(pWindow, glfwWindowSizeCallback);
-    glfwSetKeyCallback(pWindow, glfwKeyCallback);
+    glfwSetWindowSizeCallback(Game::pWindow, glfwWindowSizeCallback);
+    glfwSetKeyCallback(Game::pWindow, glfwKeyCallback);
 
     // Деламе контекст окна текущим, ведь окон может быть несколько
-    glfwMakeContextCurrent(pWindow);
+    glfwMakeContextCurrent(Game::pWindow);
 
     if (!gladLoadGL())
     {
@@ -85,18 +89,18 @@ int main(int argc, char** argv)
         Physics::PhysicsEngine::init();
         g_game->init();
 
-        glfwSetWindowSize(pWindow, static_cast<int>(3*g_game->getCurrentLevelWidth()), static_cast<int>(3 * g_game->getCurrentLevelHeight()));
+        //glfwSetWindowSize(Game::pWindow, static_cast<int>(3*g_game->getCurrentWidth()), static_cast<int>(3 * g_game->getCurrentHeight()));
         
         auto lastTime = std::chrono::high_resolution_clock::now();
 
         // Цикл отрисовки картинки
-        while (!glfwWindowShouldClose(pWindow))
+        while (!glfwWindowShouldClose(Game::pWindow))
         {
             auto currentTime = std::chrono::high_resolution_clock::now();
 
             double duration = std::chrono::duration<double, std::milli>(currentTime - lastTime).count();
             lastTime = currentTime;
-            g_game->update(pWindow ,duration);
+            g_game->update(Game::pWindow ,duration);
             Physics::PhysicsEngine::update(duration);
 
             // Отчищает буфер цвета или кадра
@@ -116,7 +120,7 @@ int main(int argc, char** argv)
             g_game->render();
 
             // Менает местами буферы
-            glfwSwapBuffers(pWindow);
+            glfwSwapBuffers(Game::pWindow);
 
             // Обработка всех ивентов из-вне (клава, мышка, изменнеие размера онка)
             glfwPollEvents();
@@ -136,27 +140,8 @@ void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int height)
 {
     g_windowSize.x = width;
     g_windowSize.y = height;
-    const float map_aspect_ratio = static_cast<float>(g_game->getCurrentLevelWidth()) / g_game->getCurrentLevelHeight();;
-    
-    unsigned int viewPortWidth = width;
-    unsigned int viewPortHeight = height;
-    unsigned int viewPortLeftOffset = 0;
-    unsigned int viewPortBottomOffset = 0;
+    g_game->setWindowSize(g_windowSize);
 
-    if (static_cast<float>(g_windowSize.x) / g_windowSize.y > map_aspect_ratio)
-    {
-        viewPortWidth = static_cast<int>(g_windowSize.y * map_aspect_ratio);
-        viewPortLeftOffset = (g_windowSize.x - viewPortWidth) / 2;
-    }
-    else
-    {
-        viewPortHeight = static_cast<int>(g_windowSize.x / map_aspect_ratio);
-        viewPortBottomOffset = (g_windowSize.y - viewPortHeight) / 2;
-    }
-
-    // Показываме OpenGL где мы хотим рисовать. 
-    // Первые два параметра -- кординаты начала полотна, затем ширина и высота
-    RenderEngine::Renderer::setViewport(viewPortWidth, viewPortHeight, viewPortLeftOffset, viewPortBottomOffset);
 }
 
 // Вызывается при нажатии клавиши
@@ -201,8 +186,8 @@ void debugLogInConsole(double delta)
         // Вывод названия видеокарты и версии OpenGL
         std::cout << "Renderer: " << RenderEngine::Renderer::getRendererStr() << std::endl;
         std::cout << "OPenGL version: " << RenderEngine::Renderer::getVersionStr() << std::endl;
-        std::cout << "First button pressed: " << getStrKeyFromEnumOrientationTank(Game::eMoveStateFirstButton) << std::endl;
-        std::cout << "Second button pressed: " << getStrKeyFromEnumOrientationTank(Game::eMoveStateSecondButton) << std::endl;
+        std::cout << "First button pressed: " << getStrKeyFromEnumOrientationTank(Level::eMoveStateFirstButtonFirstPlayer) << std::endl;
+        std::cout << "Second button pressed: " << getStrKeyFromEnumOrientationTank(Level::eMoveStateSecondButtonFirstPlayer) << std::endl;
 
     }
 }

@@ -4,6 +4,7 @@
 #include "../../Renderer/spriteAnimator.h"
 #include "../../System/Timer.h"
 #include "Bullet.h"
+#include "Tank.h"
 
 Bullet::Bullet(const double velocity, const glm::vec2& position,
 	glm::vec2& size, glm::vec2& explosionSize, const float layer)
@@ -21,6 +22,7 @@ Bullet::Bullet(const double velocity, const glm::vec2& position,
 	, m_maxVelocity(velocity)
 	, m_isExplosion(false)
 {
+	m_velocity = 0;
 	auto onCollisionCallback = [&](const IGameObject& object, const Physics::ECollisionDirection)
 	{
 		setVelocity(0);
@@ -49,16 +51,16 @@ void Bullet::render() const
 			switch (m_eOrientation)
 			{
 			case Bullet::EOrientation::Top:
-				m_pSprite_explosion->render(glm::vec2(m_position.x - m_explosionOffset.x, m_position.y + m_size.y / 4.f), m_explosionSize, m_rotation, m_layer, m_spriteAnimator_explosion.getCurrentFrame());
+				m_pSprite_explosion->render(glm::vec2(m_position.x  - m_explosionOffset.x/2, m_position.y + m_size.y / 4.f), m_explosionSize, m_rotation, m_layer + 0.03f, m_spriteAnimator_explosion.getCurrentFrame());
 				break;
 			case Bullet::EOrientation::Bottom:
-				m_pSprite_explosion->render(m_position - m_explosionOffset - glm::vec2(0, m_size.y / 2.f), m_explosionSize, m_rotation, m_layer, m_spriteAnimator_explosion.getCurrentFrame());
+				m_pSprite_explosion->render(glm::vec2(m_position.x - m_explosionOffset.x/2, m_position.y - m_size.y ), m_explosionSize, m_rotation, m_layer + 0.03f, m_spriteAnimator_explosion.getCurrentFrame());
 				break;
 			case Bullet::EOrientation::Left:
-				m_pSprite_explosion->render(m_position - m_explosionOffset - glm::vec2(m_size.y / 2.f, 0), m_explosionSize, m_rotation, m_layer, m_spriteAnimator_explosion.getCurrentFrame());
+				m_pSprite_explosion->render(glm::vec2(m_position.x - m_explosionOffset.x, m_position.y - m_size.y / 3.f), m_explosionSize, m_rotation, m_layer + 0.03f, m_spriteAnimator_explosion.getCurrentFrame());
 				break;
 			case Bullet::EOrientation::Right:
-				m_pSprite_explosion->render(m_position - m_explosionOffset + glm::vec2(m_size.y / 2.f, 0), m_explosionSize, m_rotation, m_layer, m_spriteAnimator_explosion.getCurrentFrame());
+				m_pSprite_explosion->render(glm::vec2(m_position.x + m_explosionOffset.x / 2, m_position.y - m_size.y / 3.f), m_explosionSize, m_rotation, m_layer + 0.03f, m_spriteAnimator_explosion.getCurrentFrame());
 				break;
 			}
 		}

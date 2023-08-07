@@ -139,7 +139,6 @@ BrickWall::EBrickState BrickWall::getBrickStateAfterCollision(const EBrickState 
             return EBrickState::Top;
             
         }
- 
     case EBrickState::Top:
         switch (direction)
         {
@@ -191,7 +190,6 @@ BrickWall::EBrickState BrickWall::getBrickStateAfterCollision(const EBrickState 
         case Physics::ECollisionDirection::Bottom:
             return EBrickState::TopRight;
         }
-
     default:
         return EBrickState::Destroyed;
     }
