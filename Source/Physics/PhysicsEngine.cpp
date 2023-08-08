@@ -1,6 +1,7 @@
 #include "PhysicsEngine.h"
 #include "../Game/GameObjects/IGameObject.h"
 #include "../Game/GameStates/Level.h"
+#include "../Game/GameObjects/Tank.h"
 #include <iostream>
 
 namespace Physics
@@ -96,6 +97,10 @@ namespace Physics
 		return true;
 	}
 
+	bool CheckHeadOnCollision(ECollisionDirection dynamicObjectCollisionDirection, ECollisionDirection objectCollisionDirection)
+	{
+		return true;
+	}
 
 	void PhysicsEngine::calculateTargetPositions(std::unordered_set<std::shared_ptr<IGameObject>> dynamicObjects, const double delta)
 	{
@@ -132,19 +137,22 @@ namespace Physics
 				else if (currentDynamicObject->getCurrentDirection().y < 0) objectCollisionDirection = ECollisionDirection::Top;
 
 
+				bool isHeadOnCollision = CheckHeadOnCollision(dynamicObjectCollisionDirection, objectCollisionDirection);
+
+
 				for (const auto& currentDynamicObjectCollider : colliders)
 				{
 					for (const auto& currentObjectToCheck : objectsToCheck)
 					{
-						if (currentObjectToCheck->getObjectType() == IGameObject::EObjectType::Bullet)
+						if (isHeadOnCollision)
 						{
-							if (currentObjectToCheck->getCurrentVelocity() == 0)
+							if (currentDynamicObject->getObjectType() == IGameObject::EObjectType::Tank)
 							{
-								currentDynamicObject->getTargetPosition() = newPosition;
-								continue;
+								Tank* pTankObject = dynamic_cast<Tank*>(currentDynamicObject.get());
+								if (pTankObject->m_isEnemyTank)
+									pTankObject->setHeadOnCollision(true);
 							}
 						}
-						
 						
 						const auto& collidersToCheck = currentObjectToCheck->getColliders();
 						if (currentObjectToCheck->collides(currentDynamicObject->getObjectType()) && !collidersToCheck.empty())
@@ -216,5 +224,8 @@ namespace Physics
 		return false;
 
 	}
+
+	
+
 
 }

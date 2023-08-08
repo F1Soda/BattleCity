@@ -85,6 +85,7 @@ public:
 	};
 
     Tank(const Tank::ETankType eType,
+         Level* pLevel,
          const bool bHasAI,
          const bool bShieldOnSpawn, 
          const EOrientation m_eOrientation ,
@@ -99,14 +100,19 @@ public:
 	double getMaxVelocity() const { return m_maxVelocity; }
 	void setVelocity(const double velocity) override;
 	void fire();
+    void setHeadOnCollision(bool val);
 
     std::shared_ptr<Bullet> getCurrentBullet() const { return m_pCurrentBullet; }
+
+    const bool m_isEnemyTank;
 
 private:
 
 	EOrientation m_eOrientation;
 
 	std::shared_ptr<Bullet> m_pCurrentBullet;
+    Level* m_pLevel;
+
 
 	std::shared_ptr<RenderEngine::Sprite> m_pSprite_top;
 	std::shared_ptr<RenderEngine::Sprite> m_pSprite_bottom;

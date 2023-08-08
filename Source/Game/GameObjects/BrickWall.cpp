@@ -3,7 +3,7 @@
 #include "../../Resources/ResourceManager.h"
 
 BrickWall::BrickWall(const EBrickWallType eBrickWallType, const glm::vec2& position, const glm::vec2& size, const float rotation, const float layer)
-	:IGameObject(position, size, rotation, layer, EObjectType::BtickWall)
+	:IGameObject(position, size, rotation, layer, EObjectType::BrickWall)
 	, m_eCurrentBrickState{EBrickState::Destroyed, 
 	                       EBrickState::Destroyed, 
 	                       EBrickState::Destroyed, 
@@ -277,6 +277,7 @@ Physics::AABB BrickWall::getAABBForBrickState(const EBrickLocation location, con
 
 void BrickWall::onCollisionCallback(const EBrickLocation location, const IGameObject& object, const Physics::ECollisionDirection direction)
 {
+    static int counterBreaking = 0; // когда достигнет 4, то блок точно будет сломан и можно будет его убрать из вектора level::m_levelObjects(нужно для работы AIComponent)
     if (object.getObjectType() != IGameObject::EObjectType::Bullet) return;
     const EBrickState newBrickState = getBrickStateAfterCollision(m_eCurrentBrickState[static_cast<size_t>(location)], direction);
     m_eCurrentBrickState[static_cast<size_t>(location)] = newBrickState;
@@ -286,6 +287,12 @@ void BrickWall::onCollisionCallback(const EBrickLocation location, const IGameOb
     }
     else
     {
+        counterBreaking++;
         m_brickLocationToColliderMap[static_cast<size_t>(location)]->isActive = false;
+        if (counterBreaking >= 4)
+        {
+            counterBreaking = 0;
+            m_isActive = false;
+        }
     }
 }

@@ -12,7 +12,7 @@ public:
 	{
 		BettonWall,
 		Border,
-		BtickWall,
+		BrickWall,
 		Bullet,
 		Eagle,
 		Ice,
@@ -20,6 +20,7 @@ public:
 		Trees,
 		Water,
 
+		Empty,
 		Unknown
 	};
 
@@ -38,6 +39,7 @@ public:
 
 	const glm::vec2& getSize() const { return m_size; }
 	const std::vector<Physics::Collider>& getColliders() const { return m_colliders; }
+	const bool isActive() const { return m_isActive; }
 
 	EObjectType getObjectType() const { return m_objectType; }
 	virtual bool collides(const EObjectType objectType) { return true; }
@@ -55,4 +57,5 @@ protected:
 	glm::vec2 m_direction;
 	double m_velocity;
 	std::vector<Physics::Collider> m_colliders;
+	bool m_isActive;
 };

@@ -139,10 +139,11 @@ void StartScreen::processInput(std::array<char, 349>& keys)
         switch (m_currentMenuSelection)
         {
         case 0:
-            m_pGame->startNewLevel(0, Game::EGameMode::OnePlayer);
+            m_pGame->startNewLevel(2, Game::EGameMode::OnePlayer);
             break;
         case 1:
-            m_pGame->startNewLevel(0, Game::EGameMode::TwoPlayer);
+            m_pGame->startNewLevel(2, Game::EGameMode::TwoPlayer);
+            break;
         default:
             break;
         }

@@ -10,6 +10,7 @@ IGameObject::IGameObject(const glm::vec2& position, const glm::vec2& size, const
 	, m_objectType(objectType)
 	, m_direction(0, 1.0f)
 	, m_velocity(0)
+	, m_isActive(true)
 {
 }
 

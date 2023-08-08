@@ -12,6 +12,7 @@
 #include "../Physics/PhysicsEngine.h"
 #include "../Renderer/Renderer.h"
 #include <GLFW/glfw3.h>
+#include "AIComponent.h"
 
 bool Game::lighting = true;
 
@@ -73,6 +74,8 @@ bool Game::init()
     m_pCurrentGameState = std::make_shared<StartScreen>(ResourceManager::getStartScreen(), this);
     setWindowSize(m_windowSize);
     updateViewport();
+
+    AIComponent::m_eEnemyState = AIComponent::EEnemyState::Ñhaotic;
 
     return true;
 

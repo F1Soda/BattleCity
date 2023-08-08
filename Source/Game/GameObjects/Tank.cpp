@@ -3,19 +3,22 @@
 #include "../../Resources/ResourceManager.h"
 #include "Bullet.h"
 #include "../AIComponent.h"
+#include <iostream>
 
 Tank::Tank(const Tank::ETankType eType,
-           const bool bHasAI,
-           const bool bShieldOnSpawn,
-           const EOrientation m_eOrientation,
-           const double maxVelocity,
-           const glm::vec2& position,
-           const glm::vec2& size,
-           const float layer)
+    Level* pLevel,
+    const bool bHasAI,
+    const bool bShieldOnSpawn,
+    const EOrientation m_eOrientation,
+    const double maxVelocity,
+    const glm::vec2& position,
+    const glm::vec2& size,
+    const float layer)
     : IGameObject(position, size, 0.f, layer, EObjectType::Tank)
-
+    , m_isEnemyTank(bHasAI)
     , m_eOrientation(m_eOrientation)
     , m_pCurrentBullet(std::make_shared<Bullet>(0.1, m_position + m_size / 4.f, m_size / 2.f, m_size, layer))
+    , m_pLevel(pLevel)
     , m_pSprite_top(ResourceManager::getSprite(getTankSpriteFromType(eType) + "_top"))
     , m_pSprite_bottom(ResourceManager::getSprite(getTankSpriteFromType(eType) + "_bottom"))
     , m_pSprite_left(ResourceManager::getSprite(getTankSpriteFromType(eType) + "_left"))
@@ -61,10 +64,9 @@ Tank::Tank(const Tank::ETankType eType,
 
     m_colliders.emplace_back(glm::vec2(0), m_size);
     Physics::PhysicsEngine::addDynamicGameObject(m_pCurrentBullet);
-
     if (bHasAI)
     {
-        m_pAIComponent = std::make_unique<AIComponent>(this);
+        m_pAIComponent = std::make_unique<AIComponent>(this, m_pLevel);
     }
 
 }
@@ -207,4 +209,16 @@ void Tank::fire()
 const std::string& Tank::getTankSpriteFromType(const ETankType eTankType)
 {
     return TankTypeToSpriteString[static_cast<size_t>(eTankType)];
+}
+
+void Tank::setHeadOnCollision(bool val)
+{
+    if (m_pAIComponent)
+    {
+        m_pAIComponent->m_isCollisionedByDirectionMove = val;
+    }
+    else
+    {
+        std::cerr << "Attempt to set m_isCollisionedByDirectionMove in Tank without AIComponent!";
+    }
 }
