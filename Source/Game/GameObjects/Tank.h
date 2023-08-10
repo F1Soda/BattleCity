@@ -77,11 +77,11 @@ public:
 
 	enum class EOrientation
 	{
-		Top,
-		Bottom,
-		Left, 
-		Right,
-		Idle
+        Left = 0,
+		Top=1,
+        Right = 2,
+		Bottom= 3,
+		Idle=4
 	};
 
     Tank(const Tank::ETankType eType,
@@ -101,6 +101,7 @@ public:
 	void setVelocity(const double velocity) override;
 	void fire();
     void setHeadOnCollision(bool val);
+    Tank::EOrientation getOrintationTank() const { return m_eOrientation; }
 
     std::shared_ptr<Bullet> getCurrentBullet() const { return m_pCurrentBullet; }
 

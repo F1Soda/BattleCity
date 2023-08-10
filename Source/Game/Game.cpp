@@ -71,7 +71,9 @@ bool Game::init()
     }
     m_pSpriteShaderProgram->use();
     m_pSpriteShaderProgram->setInt("tex", 0);
-    m_pCurrentGameState = std::make_shared<StartScreen>(ResourceManager::getStartScreen(), this);
+    auto pLevel = std::make_shared<Level>(ResourceManager::getLevels()[2], Game::EGameMode::OnePlayer);
+    m_pCurrentGameState = pLevel; //std::make_shared<StartScreen>(ResourceManager::getStartScreen(), this);
+    Physics::PhysicsEngine::setCurrentLevel(pLevel);
     setWindowSize(m_windowSize);
     updateViewport();
 

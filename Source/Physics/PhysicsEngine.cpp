@@ -137,22 +137,22 @@ namespace Physics
 				else if (currentDynamicObject->getCurrentDirection().y < 0) objectCollisionDirection = ECollisionDirection::Top;
 
 
-				bool isHeadOnCollision = CheckHeadOnCollision(dynamicObjectCollisionDirection, objectCollisionDirection);
+				//bool isHeadOnCollision = CheckHeadOnCollision(dynamicObjectCollisionDirection, objectCollisionDirection);
 
 
 				for (const auto& currentDynamicObjectCollider : colliders)
 				{
 					for (const auto& currentObjectToCheck : objectsToCheck)
 					{
-						if (isHeadOnCollision)
-						{
-							if (currentDynamicObject->getObjectType() == IGameObject::EObjectType::Tank)
-							{
-								Tank* pTankObject = dynamic_cast<Tank*>(currentDynamicObject.get());
-								if (pTankObject->m_isEnemyTank)
-									pTankObject->setHeadOnCollision(true);
-							}
-						}
+						//if (isHeadOnCollision)
+						//{
+						//	/*if (currentDynamicObject->getObjectType() == IGameObject::EObjectType::Tank)
+						//	{
+						//		Tank* pTankObject = dynamic_cast<Tank*>(currentDynamicObject.get());
+						//		if (pTankObject->m_isEnemyTank)
+						//			pTankObject->setHeadOnCollision(true);
+						//	}*/
+						//}
 						
 						const auto& collidersToCheck = currentObjectToCheck->getColliders();
 						if (currentObjectToCheck->collides(currentDynamicObject->getObjectType()) && !collidersToCheck.empty())

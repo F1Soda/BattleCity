@@ -211,14 +211,14 @@ const std::string& Tank::getTankSpriteFromType(const ETankType eTankType)
     return TankTypeToSpriteString[static_cast<size_t>(eTankType)];
 }
 
-void Tank::setHeadOnCollision(bool val)
-{
-    if (m_pAIComponent)
-    {
-        m_pAIComponent->m_isCollisionedByDirectionMove = val;
-    }
-    else
-    {
-        std::cerr << "Attempt to set m_isCollisionedByDirectionMove in Tank without AIComponent!";
-    }
-}
+//void Tank::setHeadOnCollision(bool val)
+//{
+//    if (m_pAIComponent)
+//    {
+//        m_pAIComponent->m_isCollisionedByDirectionMove = val;
+//    }
+//    else
+//    {
+//        std::cerr << "Attempt to set m_isCollisionedByDirectionMove in Tank without AIComponent!";
+//    }
+//}
