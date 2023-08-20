@@ -2,72 +2,80 @@ cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
 set(PROJECT_NAME BattleCity)
 
+
+
 project(${PROJECT_NAME})
 
+#add_executable(${PROJECT_NAME} 
+#	src/main.cpp
+#	src/Renderer/ShaderProgram.cpp
+#	src/Renderer/ShaderProgram.h
+#	src/Resources/ResourceManager.cpp
+#	src/Resources/ResourceManager.h
+#	src/Resources/stb_image.h
+#	src/Renderer/texture2D.cpp
+#	src/Renderer/texture2D.h
+#	src/Renderer/sprite.cpp
+#	src/Renderer/sprite.h
+#	src/Game/Game.h
+#	src/Game/Game.cpp
+#	src/Game/GameObjects/Tank.h
+#	src/Game/GameObjects/Tank.cpp
+#	src/Renderer/VertexBuffer.cpp
+#	src/Renderer/VertexBuffer.h
+#	src/Renderer/IndexBuffer.h
+#	src/Renderer/IndexBuffer.cpp
+#	src/Renderer/VertexArray.h
+#	src/Renderer/VertexArray.cpp
+#	src/Renderer/VertexBufferLayout.h
+#	src/Renderer/VertexBufferLayout.cpp
+#	src/Renderer/Renderer.cpp
+#	src/Renderer/Renderer.h
+#	src/Game/GameObjects/IGameObject.h
+#	src/Game/GameObjects/IGameObject.cpp
+#	src/Game/GameObjects/BrickWall.h
+#	src/Game/GameObjects/BrickWall.cpp
+#	src/Renderer/spriteAnimator.cpp
+#	src/Renderer/spriteAnimator.h
+#	src/Game/GameObjects/BetonWall.h
+#	src/Game/GameObjects/BetonWall.cpp
+#	src/Game/GameObjects/Trees.h
+#	src/Game/GameObjects/Trees.cpp
+#	src/Game/GameObjects/Ice.h
+#	src/Game/GameObjects/Ice.cpp
+#	src/Game/GameObjects/Eagle.h
+#	src/Game/GameObjects/Eagle.cpp
+#	src/Game/GameObjects/Water.h
+#	src/Game/GameObjects/Water.cpp
+#	src/Game/GameObjects/Border.h
+#	src/Game/GameObjects/Border.cpp
+#	src/System/Timer.h
+#	src/System/Timer.cpp
+#	src/Physics/PhysicsEngine.h
+#	src/Physics/PhysicsEngine.cpp
+#	src/Game/GameObjects/Bullet.h
+#	src/Game/GameObjects/Bullet.cpp
+#	src/Game/GameStates/IGameState.h
+#	src/Game/GameStates/StartScreen.h
+#	src/Game/GameStates/StartScreen.cpp
+#	src/Game/GameStates/Level.h
+#	src/Game/GameStates/Level.cpp
+#	src/Game/AIComponent.h
+#	src/Game/AIComponent.cpp
+#)
+
+FILE(GLOB_RECURSE headers "src/*.h")
+FILE(GLOB_RECURSE sources "src/*.cpp")
 
 
-add_executable(${PROJECT_NAME} 
-	Source/main.cpp
-	Source/Renderer/ShaderProgram.cpp
-	Source/Renderer/ShaderProgram.h
-	Source/Resources/ResourceManager.cpp
-	Source/Resources/ResourceManager.h
-	Source/Resources/stb_image.h
-	Source/Renderer/texture2D.cpp
-	Source/Renderer/texture2D.h
-	Source/Renderer/sprite.cpp
-	Source/Renderer/sprite.h
-	Source/Game/Game.h
-	Source/Game/Game.cpp
-	Source/Game/GameObjects/Tank.h
-	Source/Game/GameObjects/Tank.cpp
-	Source/Renderer/VertexBuffer.cpp
-	Source/Renderer/VertexBuffer.h
-	Source/Renderer/IndexBuffer.h
-	Source/Renderer/IndexBuffer.cpp
-	Source/Renderer/VertexArray.h
-	Source/Renderer/VertexArray.cpp
-	Source/Renderer/VertexBufferLayout.h
-	Source/Renderer/VertexBufferLayout.cpp
-	Source/Renderer/Renderer.cpp
-	Source/Renderer/Renderer.h
-	Source/Game/GameObjects/IGameObject.h
-	Source/Game/GameObjects/IGameObject.cpp
-	Source/Game/GameObjects/BrickWall.h
-	Source/Game/GameObjects/BrickWall.cpp
-	Source/Renderer/spriteAnimator.cpp
-	Source/Renderer/spriteAnimator.h
-	Source/Game/GameObjects/BetonWall.h
-	Source/Game/GameObjects/BetonWall.cpp
-	Source/Game/GameObjects/Trees.h
-	Source/Game/GameObjects/Trees.cpp
-	Source/Game/GameObjects/Ice.h
-	Source/Game/GameObjects/Ice.cpp
-	Source/Game/GameObjects/Eagle.h
-	Source/Game/GameObjects/Eagle.cpp
-	Source/Game/GameObjects/Water.h
-	Source/Game/GameObjects/Water.cpp
-	Source/Game/GameObjects/Border.h
-	Source/Game/GameObjects/Border.cpp
-	Source/System/Timer.h
-	Source/System/Timer.cpp
-	Source/Physics/PhysicsEngine.h
-	Source/Physics/PhysicsEngine.cpp
-	Source/Game/GameObjects/Bullet.h
-	Source/Game/GameObjects/Bullet.cpp
-	Source/Game/GameStates/IGameState.h
-	Source/Game/GameStates/StartScreen.h
-	Source/Game/GameStates/StartScreen.cpp
-	Source/Game/GameStates/Level.h
-	Source/Game/GameStates/Level.cpp
-	Source/Game/AIComponent.h
-	Source/Game/AIComponent.cpp
-	
-)
+
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-	
+add_executable(${PROJECT_NAME} ${headers} ${sources})	
+
+set_target_properties(BattleCity PROPERTIES FOLDER "myGameFolder")
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
@@ -81,6 +89,7 @@ target_link_libraries(${PROJECT_NAME} glfw)
 
 add_subdirectory(external/glad)
 target_link_libraries(${PROJECT_NAME} glad)
+set_target_properties(glad PROPERTIES FOLDER "glad")
 
 include_directories(external/glm)
 
@@ -88,9 +97,36 @@ include_directories(external/rapidjson/include)
 
 add_subdirectory(external/RandomLib)
 target_link_libraries(${PROJECT_NAME} effolkronium_random)
+set(Random_BuildTests OFF CACHE BOOL "" FORCE)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 						COMMAND ${CMAKE_COMMAND} -E copy_directory
 						${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:${PROJECT_NAME}>/res)
+
+function(GroupSourcesByFolder target) 
+  set(SOURCE_GROUP_DELIMITER "/")
+  set(last_dir "")
+  set(files "")
+
+  get_target_property(sources ${target} SOURCES)
+  foreach(file ${sources})                                            
+    file(RELATIVE_PATH relative_file "${PROJECT_SOURCE_DIR}" ${file}) 
+    get_filename_component(dir "${relative_file}" PATH)               
+    if(NOT "${dir}" STREQUAL "${last_dir}")
+      if(files)
+        source_group("${last_dir}" FILES ${files})
+      endif()
+      set(files "")
+    endif()
+    set(files ${files} ${file})
+    set(last_dir "${dir}")
+  endforeach()
+
+  if(files)
+    source_group("${last_dir}" FILES ${files})
+  endif()
+endfunction()
+
+GROUPSOURCESBYFOLDER(${PROJECT_NAME})
