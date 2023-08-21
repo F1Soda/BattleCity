@@ -20,6 +20,7 @@ StartScreen::StartScreen(const std::vector<std::string>& startScreenDescription,
     , m_menuSprite(std::make_pair(Resources::ResourceManager::getSprite("menu"), glm::vec2(11 * BLOCK_SIZE, STARTSCREEN_HEIGHT - startScreenDescription.size() * BLOCK_SIZE - MENU_HEIGHT - 5 * BLOCK_SIZE)))
     , m_tankSprite(std::make_pair(Resources::ResourceManager::getSprite("player1_yellow_tank_type1_sprite_right"), glm::vec2(8 * BLOCK_SIZE, m_menuSprite.second.y + 6 * BLOCK_SIZE - m_currentMenuSelection * 2 * BLOCK_SIZE)))
     , m_tankSpriteAnimator(m_tankSprite.first)
+    , m_pGameManager(m_pGame->getGameManager())
 {
 	if (startScreenDescription.empty())
 	{
@@ -120,7 +121,7 @@ void StartScreen::processInput(std::array<char, 349>& keys)
     if (!canStart)
         return;
 
-    if (!keys[GLFW_KEY_W] && !keys[GLFW_KEY_S])
+    if (!keys[GLFW_KEY_W] && !keys[GLFW_KEY_S] && !keys[GLFW_KEY_ESCAPE])
         m_keyReleased = true;
 
     if (m_keyReleased)
@@ -140,6 +141,12 @@ void StartScreen::processInput(std::array<char, 349>& keys)
             if (m_currentMenuSelection > 2)
                 m_currentMenuSelection = 0;
         }
+
+        if (keys[GLFW_KEY_ESCAPE])
+        {
+            m_pGame->exit();
+        }
+
     }
 
     if (keys[GLFW_KEY_ENTER])

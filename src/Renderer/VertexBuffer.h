@@ -19,7 +19,7 @@ namespace RenderEngine
 		void update(const void* data, const unsigned int size) const;
 		void bind() const;
 		void unbind() const;
-
+		const GLuint getID() const { return m_id; }
 
 	private:
 		GLuint m_id;

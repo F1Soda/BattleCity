@@ -8,7 +8,7 @@
 
 class IGameObject;
 struct GLFWwindow;
-//class UIMenuLevel;
+class UIMenuLevel;
 
 class Level : public IGameState
 {
@@ -50,6 +50,8 @@ public:
 	void destroyEnemyTank(Tank* pTankToDelete);
 	void destroyPlayerTank(Tank* pTank);
 
+	void setPause() { isOnPause = true; }
+
 private:
 	size_t m_widthBlocks = 0;
 	size_t m_heightBlocks = 0;
@@ -77,7 +79,7 @@ private:
 	Game::EGameMode m_eGameMode;
 	GameManager* m_pGameManager;
 	
-	//std::shared_ptr<UIMenuLevel> m_pUIMenuLevel;
+	std::shared_ptr<UIMenuLevel> m_pUIMenuLevel;
 
 	Timer m_endingLevelTimer;
 	Timer m_respawnTimer;

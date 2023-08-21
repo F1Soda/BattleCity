@@ -7,6 +7,9 @@
 #include "../Game.h"
 #include "../GameManager.h"
 
+
+static const double timeCantDrivingOnIce = 500;
+
 Tank::Tank(const Tank::ETankType eType,
     Level* pLevel,
     const bool bHasAI,
@@ -52,7 +55,14 @@ Tank::Tank(const Tank::ETankType eType,
     , m_health(1)
     , m_isDestroyed(false)
     , m_type(eType)
+    , m_canDrive(true)
 {
+
+    m_iceDriceTimer.setCallback([&]() {
+        m_canDrive = true;
+        m_velocity = 0;
+        });
+
     setOrientation(m_eOrientation);
     m_isActive = false;
     m_respawnTimer.setCallback([&]()
@@ -100,6 +110,13 @@ Tank::Tank(const Tank::ETankType eType,
                 destroy();
                 
             }
+
+            else if (object.getObjectType() == IGameObject::EObjectType::Ice && canDrive())
+            {
+                m_canDrive = false;
+                m_iceDriceTimer.start(timeCantDrivingOnIce);
+            }
+
         };
 
     m_colliders.emplace_back(glm::vec2(0), m_size, onCollisionCallback);
@@ -204,6 +221,9 @@ void Tank::setOrientation(const EOrientation eOrientation)
 void Tank::update(const double delta)
 {
 
+    m_iceDriceTimer.update(delta);
+
+
     if ((m_position.x<0 || m_position.x > m_pLevel->getWindowSizeInPixels().x || m_position.y<0 || m_position.y > m_pLevel->getWindowSizeInPixels().y) && !m_isDestroyed)
     {
         std::cout << "Tank out of bounds level. Call Tank::destroy()\n";
@@ -215,12 +235,6 @@ void Tank::update(const double delta)
         m_pCurrentBullet->update(delta);
         if (m_pCurrentBullet->getCurrentVelocity() != 0)
         {
-            bool b1 = m_pCurrentBullet->getCurrentPosition().y < 0;
-            bool b2 = m_pCurrentBullet->getCurrentPosition().y > m_pLevel->getWindowSizeInPixels().y;
-            bool b3 = m_pCurrentBullet->getCurrentPosition().x < 0;
-            bool b4 = m_pCurrentBullet->getCurrentPosition().x > m_pLevel->getWindowSizeInPixels().x + 10;
-            auto a1 = m_pCurrentBullet->getCurrentPosition();
-            auto a2 = m_pLevel->getWindowSizeInPixels();
             if (m_pCurrentBullet->getCurrentPosition().y < 0 || m_pCurrentBullet->getCurrentPosition().y > m_pLevel->getWindowSizeInPixels().y
                 || m_pCurrentBullet->getCurrentPosition().x < 0 || m_pCurrentBullet->getCurrentPosition().x > m_pLevel->getWindowSizeInPixels().x + 10 && !m_pCurrentBullet->isExplosioning())
             {

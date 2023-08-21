@@ -14,7 +14,7 @@ namespace RenderEngine
 }
 
 class Game;
-
+class GameManager;
 
 class StartScreen : public IGameState
 {
@@ -46,4 +46,7 @@ private:
 	Timer m_waitOneSecondBeforStartTimer; // При нажаитии enter в окне GameOver 
 	//сражу enter срабатывает и в окне StartScreen, потому немного ждем
 	bool canStart = false; // for timer waitOneSecondBeforStartTimer
+
+	GameManager* m_pGameManager;
+
 };

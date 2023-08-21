@@ -35,6 +35,8 @@ Game::Game(const glm::uvec2& windowSize)
     ,m_currentLevelIndex(0)
     
 {
+
+
     m_endingLevelTimer.setCallback([&]()
         {
             std::cerr << "Call empty edingLevelCallback!";
@@ -80,6 +82,7 @@ bool Game::init()
     Resources::ResourceManager::loadJSONResources("res/resources.json");
     m_countLevels = Resources::ResourceManager::getCountLevels();
     m_pSpriteShaderProgram = Resources::ResourceManager::getShaderProgram("spriteShader");
+    m_pUIShaderProgram = Resources::ResourceManager::getShaderProgram("UIShader");
     if (!m_pSpriteShaderProgram)
     {
         std::cerr << "Can't find shader program: " << "spriteShader" << std::endl;
@@ -87,9 +90,10 @@ bool Game::init()
     }
     m_pSpriteShaderProgram->use();
     m_pSpriteShaderProgram->setInt("tex", 0);
-    setStartScreen(); 
-    gameOver(glm::vec2(Level::BLOCK_SIZE*13, Level::BLOCK_SIZE * 14));
-    //setWindowSize(m_windowSize);
+    startNewLevel(1 , Game::EGameMode::OnePlayer);
+    //setStartScreen(); 
+    //gameOver(glm::vec2(m_pCurrentGameState->getStateWidth(), m_pCurrentGameState->getStateHeight()));//glm::vec2(Level::BLOCK_SIZE*13, Level::BLOCK_SIZE * 14));
+    setWindowSize(m_windowSize);
     updateViewport();
 
     AIComponent::m_eEnemyState = AIComponent::EEnemyState::Ñhaotic;
@@ -151,6 +155,8 @@ void Game::updateViewport()
 
     glm::mat4 projectionMatrix = glm::ortho(0.0f, static_cast<float>(getCurrentWidth()), 0.0f, static_cast<float>(getCurrentHeight()), -100.0f, 100.0f);
     m_pSpriteShaderProgram->setMatrix4("projectionMat", projectionMatrix);
+    m_pUIShaderProgram->use();
+    m_pUIShaderProgram->setMatrix4("projectionMat", projectionMatrix);
 }
 
 void Game::nextLevel(const EGameMode eGameMode)
@@ -178,6 +184,24 @@ void Game::gameOver(glm::vec2& scaleScreen)
     {
         m_pCurrentGameState = std::make_shared<GameOver>(Resources::ResourceManager::getGameOver(), this, scaleScreen);
     }
-        
+       
+}
 
+void Game::restart()
+{
+    startNewLevel(m_currentLevelIndex, m_currentGameMode);
+}
+
+void Game::pauseWhenChangingSizeOrPosionWindow()
+{
+    if (m_pGameManager->isLevel())
+    {
+        m_pGameManager->pause();
+    }
+}
+
+
+void Game::exit()
+{
+    glfwSetWindowShouldClose(pWindow, GL_TRUE);
 }

@@ -38,6 +38,7 @@ void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int height);
 void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int mode);
 void adding(short channel, float addingValue, bool plus);
 static std::string getStrKeyFromEnumOrientationTank(Tank::EOrientation eValue);
+void window_pos_callback(GLFWwindow* window, int xpos, int ypos);
 
 int main(int argc, char** argv)
 {
@@ -69,6 +70,7 @@ int main(int argc, char** argv)
     
     // Назначение функций для Callback-оф
     glfwSetWindowSizeCallback(Game::pWindow, glfwWindowSizeCallback);
+    glfwSetWindowPosCallback(Game::pWindow, window_pos_callback);
     glfwSetKeyCallback(Game::pWindow, glfwKeyCallback);
 
     // Деламе контекст окна текущим, ведь окон может быть несколько
@@ -89,8 +91,10 @@ int main(int argc, char** argv)
     {
         // При запуске программы в функцыю main передаётся путь к exe.файлу
         Resources::ResourceManager::setExecutablePath(argv[0]);
-        Physics::PhysicsEngine::init();
+       
         g_game->init();
+        Physics::PhysicsEngine::init(g_game->getGameManager());
+        
 
         //glfwSetWindowSize(Game::pWindow, static_cast<int>(3*g_game->getCurrentWidth()), static_cast<int>(3 * g_game->getCurrentHeight()));
         
@@ -142,6 +146,7 @@ int main(int argc, char** argv)
 // Вызывается при изменении окна
 void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int height)
 {
+    g_game->pauseWhenChangingSizeOrPosionWindow();
     g_windowSize.x = width;
     g_windowSize.y = height;
     g_game->setWindowSize(g_windowSize);
@@ -208,4 +213,9 @@ static std::string getStrKeyFromEnumOrientationTank(Tank::EOrientation eValue)
         return " Empty ";
         break;
     }
+}
+
+void window_pos_callback(GLFWwindow* window, int xpos, int ypos)
+{
+    g_game->pauseWhenChangingSizeOrPosionWindow();
 }

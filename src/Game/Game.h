@@ -38,13 +38,16 @@ public:
 	void nextLevel(const EGameMode eGameMode);
 	void setStartScreen();
 	void gameOver(glm::vec2& scaleScreen = glm::vec2(0));
+	void restart();
 
 	static bool lighting;
 	static GLFWwindow* pWindow;
 	void reduceCountTankPlayers(int count = 1);
 	void reduceCountTankEnemy(int count = 1);
 	//int getCurrentCountTankEnemies() const { return m_currentCountEnemyTanks; }
-
+	void pauseWhenChangingSizeOrPosionWindow();
+	GameManager* getGameManager() { return m_pGameManager.get(); }
+	void exit();
 
 private:
 
@@ -70,6 +73,7 @@ private:
 
 	std::shared_ptr<IGameState> m_pCurrentGameState;
 	std::shared_ptr<RenderEngine::ShaderProgram> m_pSpriteShaderProgram;
+	std::shared_ptr<RenderEngine::ShaderProgram> m_pUIShaderProgram;
 	size_t m_currentLevelIndex;
 	EGameMode m_currentGameMode;
 

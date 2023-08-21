@@ -4,6 +4,12 @@
             "name": "spriteShader",
             "filePath_v": "res/shaders/vSprite.txt",
             "filePath_f": "res/shaders/fSprite.txt"
+        },
+
+        {
+            "name": "UIShader",
+            "filePath_v": "res/shaders/vertexUI.txt",
+            "filePath_f": "res/shaders/fragmentUI.txt"
         }
     ],
 
@@ -312,6 +318,16 @@
             "subTextureHeight": 64,
             "subTextures": [
                 "menu"
+            ]
+        },
+
+        {
+            "name": "menuInLevel",
+            "filePath": "res/textures/UIMenuText.png",
+            "subTextureWidth": 128,
+            "subTextureHeight": 240,
+            "subTextures": [
+                "menuLevel"
             ]
         }
 
@@ -676,6 +692,12 @@
             "textureAtlas": "menu_128x64",
             "shader": "spriteShader",
             "initialSubTexture": "menu"
+        },
+        {
+            "name": "menuLevel",
+            "textureAtlas": "menuInLevel",
+            "shader": "spriteShader",
+            "initialSubTexture": "menuLevel"
         },
 
         {

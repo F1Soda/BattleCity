@@ -108,6 +108,8 @@ public:
     Tank::EOrientation getOrintationTank() const { return m_eOrientation; }
     void onCollision(IGameObject& object) override;
 
+    bool canDrive() const { return m_canDrive; }
+
     void destroy();
 
     std::shared_ptr<Bullet> getCurrentBullet() const { return m_pCurrentBullet; }
@@ -156,12 +158,13 @@ private:
 	Timer m_respawnTimer;
 	Timer m_shieldTimer;
     Timer m_explosionTimer;
-    
+    Timer m_iceDriceTimer;
 
 	double m_maxVelocity;
 	bool m_isSpawning;
 	bool m_hasShield;
     bool m_bShieldOnSpawn;
+    bool m_canDrive;
 
     int m_health;
 

@@ -21,7 +21,7 @@ namespace RenderEngine
 		void addBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout);
 		void bind() const;
 		void unbind() const;
-
+		const GLuint getID() const { return m_id; }
 
 	private:
 		GLuint m_id;

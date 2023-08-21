@@ -8,6 +8,7 @@
 class IGameObject;
 class Level;
 class Tank;
+class GameManager;
 
 namespace Physics
 {
@@ -60,7 +61,7 @@ namespace Physics
 		PhysicsEngine& operator=(PhysicsEngine&&) = delete;
 		PhysicsEngine(PhysicsEngine&&) = delete;
 
-		static void init();
+		static void init(GameManager* pGameManager);
 		static void terminate();
 
 		static void update(const double delta);
@@ -78,7 +79,11 @@ namespace Physics
 		static void calculateTargetPositions(std::unordered_set<std::shared_ptr<IGameObject>> dynamicObjects, const double delta);
 		static void updatePosition(std::unordered_set<std::shared_ptr<IGameObject>> dynamicObjects);
 
+		static IGameObject* getObjectUnderTank(Tank& tank);
+
 		static void checkIfTankInTank(Tank* t1, Tank* t2);
+
+		 static GameManager* m_pGameManager;
 
 	};
 }

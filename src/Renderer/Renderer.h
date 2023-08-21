@@ -12,6 +12,7 @@ namespace RenderEngine
 	{
 	public:
 		static void draw(const VertexArray& vertexArray, const IndexBuffer& indexBuffer, const ShaderProgram& shader);
+		static void drawUI(const VertexArray& vertexArray, const IndexBuffer& indexBuffer, const ShaderProgram& shader);
 		static void setClearColor(float r, float g, float b, float a);
 		static void Renderer::clear();
 		static void setDepth(const bool enable);
@@ -19,6 +20,8 @@ namespace RenderEngine
 
 		static char* getRendererStr();
 		static char* getVersionStr();
+
+		static void drawLine();
 
 	private:
 

@@ -12,10 +12,12 @@
 #include "../../Game.h"
 #include <algorithm>
 #include <cmath>
-#include <GLFW/glfw3.h>
 #include "../RandomLib/include/effolkronium/random.hpp"
-//#include "../UIMenuInLevel.h"
+#include "../UIMenuInLevel.h"
 #include "../../../Resources/ResourceManager.h"
+
+
+#include <GLFW/glfw3.h>
 
 
 Tank::EOrientation Level::eMoveStateFirstButtonFirstPlayer = Tank::EOrientation::Idle;
@@ -25,6 +27,7 @@ Tank::EOrientation Level::eMoveStateSecondButtonSecondPlayer = Tank::EOrientatio
 Tank::EOrientation Level::eMoveStateFirstButtonSecondPlayer = Tank::EOrientation::Idle;
 
 static bool button_P_Esc_released = false;
+static bool buttonInMenureleased = false;
 static const bool playerWithAIComponent = false;
 static const int maxCountTanksOnLevel = 4;
 
@@ -162,16 +165,13 @@ Level::Level(const std::vector<std::string>& levelDescription, std::unordered_ma
 	// right border
 	m_levelObjects.emplace_back(std::make_shared<Border>(glm::vec2((m_widthBlocks +1) * BLOCK_SIZE, 0.0f), glm::vec2(BLOCK_SIZE*2.0f, BLOCK_SIZE * (m_heightBlocks + 1)), 0.f, 0.f));
 
-	//m_pUIMenuLevel = std::make_shared<UIMenuLevel>(this, Resources::ResourceManager::getShaderProgram("spriteShader"));
+	m_pUIMenuLevel = std::make_shared<UIMenuLevel>(this, Resources::ResourceManager::getShaderProgram("UIShader"));
 
 }
 
 void Level::render() const
 {
-	if (isOnPause)
-	{
-		//m_pUIMenuLevel->render(getWindowSizeInPixels(), glm::vec2(BLOCK_SIZE),0.f, 1.1f, 0);
-	}
+	
 
 
 	for (const auto& currentMapObject : m_levelObjects)
@@ -195,6 +195,11 @@ void Level::render() const
 	{
 		currentTank->render();
 	}
+	if (isOnPause)
+	{
+		m_pUIMenuLevel->render();
+	}
+
 
 }
 
@@ -338,13 +343,52 @@ void Level::processInput(std::array<char, 349>& keys)
 
 	if (isOnPause)
 	{
+		if (!keys[GLFW_KEY_W] && !keys[GLFW_KEY_S] && !keys[GLFW_KEY_ENTER])
+		{
+			buttonInMenureleased = true;
+		}
+		if (buttonInMenureleased)
+		{
+			if (keys[GLFW_KEY_W])
+			{
+				m_pUIMenuLevel->upLine();
+				buttonInMenureleased = false;
+			}
+			else if (keys[GLFW_KEY_S])
+			{
+				m_pUIMenuLevel->downLine();
+				buttonInMenureleased = false;
+			}
+			else if (keys[GLFW_KEY_ENTER])
+			{
+				auto currentPosLine = m_pUIMenuLevel->getCUrrentPositionLine();
+				switch (currentPosLine)
+				{
+				case primitives::Line::ELinePosition::MENU:
+					m_pGameManager->setStartScreen();
+					break;
+				case primitives::Line::ELinePosition::RESTART:
+					m_pGameManager->restart();
+					break;
+				case primitives::Line::ELinePosition::SOUND:
+					std::cout << "Not implemented yet =)\n";
+					break;
+				}
+				buttonInMenureleased = false;
+			}
+
+		}
+
 		return;
 	}
+
+
+
 
 	switch (m_eGameMode)
 	{
 	case Game::EGameMode::TwoPlayer:
-		if (m_pTank2->isActive())
+		if (m_pTank2->isActive() && m_pTank2->canDrive())
 		{
 			CheckButtonStatusSecondPlayer(GLFW_KEY_UP, Tank::EOrientation::Top);
 			CheckButtonStatusSecondPlayer(GLFW_KEY_LEFT, Tank::EOrientation::Left);
@@ -375,7 +419,7 @@ void Level::processInput(std::array<char, 349>& keys)
 		
 		[[fallthrough]]; // преднамеренно не указано break, чтобы компилятор не ругался
 	case Game::EGameMode::OnePlayer:
-		if (m_pTank1->isActive())
+		if (m_pTank1->isActive() && m_pTank1->canDrive())
 		{
 			CheckButtonStatusFirstPlayer(GLFW_KEY_W, Tank::EOrientation::Top);
 			CheckButtonStatusFirstPlayer(GLFW_KEY_A, Tank::EOrientation::Left);

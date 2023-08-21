@@ -24,7 +24,6 @@ namespace RenderEngine
 			0.0f, 0.0f,
 			0.0f, 1.0f,
 			1.0f, 1.0f,
-
 			1.0f, 0.0f,
 
 		};
@@ -56,7 +55,7 @@ namespace RenderEngine
 		textureCoordsLayout.addElementLayoutFloat(2, false);
 		m_vertexArray.addBuffer(m_textureCoordsBuffer, textureCoordsLayout);
 
-		m_indexBuffer.init(indices, 6*sizeof(GLuint));
+		m_indexBuffer.init(indices, 6);
 
 		m_vertexArray.unbind();
 		m_indexBuffer.unbind();

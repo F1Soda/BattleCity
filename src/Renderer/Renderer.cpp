@@ -8,7 +8,20 @@ namespace RenderEngine
 		 vertexArray.bind();
 		 indexBuffer.bind();
 
+
 		 glDrawElements(GL_TRIANGLES, indexBuffer.getCount(), GL_UNSIGNED_INT, nullptr);
+
+	 }
+
+	 void Renderer::drawUI(const VertexArray& vertexArray, const IndexBuffer& indexBuffer, const ShaderProgram& shader)
+	 {
+		 shader.use();
+		 vertexArray.bind();
+		 //indexBuffer.bind();
+
+		 //glDrawElements(GL_TRIANGLES, indexBuffer.getCount(), GL_UNSIGNED_INT, nullptr);
+
+		 glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	 }
 

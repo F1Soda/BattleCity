@@ -1,8 +1,10 @@
 #include "PhysicsEngine.h"
 #include "../Game/GameObjects/IGameObject.h"
-#include "../Game/GameStates/Level.h"
+#include "../Game/UI/GameStates/Level.h"
 #include "../Game/GameObjects/Tank.h"
 #include <iostream>
+#include <algorithm>
+//#include "../Game/GameManager.h" // nothing including 
 
 namespace Physics
 {
@@ -10,9 +12,10 @@ namespace Physics
 
 	std::unordered_set<std::shared_ptr<IGameObject>> PhysicsEngine::m_dynamicObjects;
 	std::shared_ptr<Level> PhysicsEngine::m_pCurrentLevel;
-	void PhysicsEngine::init()
+	GameManager* PhysicsEngine::m_pGameManager;
+	void PhysicsEngine::init(GameManager* pGameManager)
 	{
-
+		m_pGameManager = pGameManager;
 	}
 	void PhysicsEngine::terminate()
 	{
@@ -49,25 +52,9 @@ namespace Physics
 
 				if ( ! (hasPositionIntersection(pObject1, pObject1->getTargetPosition(), pObject2, pObject2->getTargetPosition())))
 				{
-					//pObject1->getTargetPosition() = pObject1->getCurrentPosition();
-					//pObject2->getTargetPosition() = pObject2->getCurrentPosition();
 					continue;
 				}
 
-				/*if (hasPositionIntersection(pObject1, pObject1->getTargetPosition(), pObject2, pObject2->getTargetPosition(), true) && pObject2->isActive() && pObject1->isActive())
-				{
-					if (pObject1->getObjectType() == IGameObject::EObjectType::Tank && pObject2->getObjectType() == IGameObject::EObjectType::Tank)
-					{
-						Tank* pT1 = dynamic_cast<Tank*>(pObject1.get());
-						Tank* pT2 = dynamic_cast<Tank*>(pObject2.get());
-						if ((pT1->m_isEnemyTank && !pT2->m_isEnemyTank) || (pT2->m_isEnemyTank && !pT1->m_isEnemyTank))
-						{
-							pObject1->getTargetPosition() = pObject1->getCurrentPosition();
-							pObject2->getTargetPosition() = pObject2->getCurrentPosition();
-							continue;
-						}
-					}
-				}*/
 
 				if (hasPositionIntersection(pObject1, pObject1->getTargetPosition(), pObject2, pObject2->getCurrentPosition(), true) && pObject2->isActive() && pObject1->isActive())
 				{
@@ -81,7 +68,6 @@ namespace Physics
 							if (tank1->m_isEnemyTank && tank2->m_isEnemyTank)
 							{
  								tank1->setOrientation(Tank::EOrientation((int(tank1->getOrintationTank()) + 2) % 4));
-								//tank2->setOrientation(Tank::EOrientation((int(tank2->getOrintationTank()) + 2) % 4));
 								checkIfTankInTank(tank1, tank2);
 							}
 
@@ -98,7 +84,7 @@ namespace Physics
 						Tank* tank2 = dynamic_cast<Tank*>(pObject2.get());
 						if (tank1->m_isEnemyTank && tank2->m_isEnemyTank)
 						{
-							//tank1->setOrientation(Tank::EOrientation((int(tank1->getOrintationTank()) + 2) % 4));
+
 							tank2->setOrientation(Tank::EOrientation((int(tank2->getOrintationTank()) + 2) % 4));
 							checkIfTankInTank(tank1, tank2);
 						}
@@ -111,13 +97,6 @@ namespace Physics
 					isSetNewLevel = false;
 					goto Exit;
 				}
-
-				/*if ( && pObject1->isActive()&& pObject2->isActive())
-				{
-				 	pObject2->getTargetPosition() = pObject2->getCurrentPosition();
-					pObject2->onCollision(*pObject1);
-					pObject1->onCollision(*pObject2);
-				}*/
 			}
 		}
 		updatePosition(m_dynamicObjects); // CurrentPosition = TargetPosition;
@@ -206,6 +185,17 @@ namespace Physics
 				{
 					for (const auto& currentObjectToCheck : objectsToCheck)
 					{
+
+						if (currentObjectToCheck->getObjectType() == IGameObject::EObjectType::Ice && currentDynamicObject->getObjectType() == IGameObject::EObjectType::Tank)
+						{
+							//std::cout << "Ices!\n";
+							Tank* tank = dynamic_cast<Tank*>(currentDynamicObject.get());
+							IGameObject* objectUnderTank = getObjectUnderTank(*tank);
+							if (objectUnderTank && objectUnderTank->getObjectType() == IGameObject::EObjectType::Ice)
+							{
+								currentDynamicObject->getColliders()[0].onCollisionCallback(*currentObjectToCheck, dynamicObjectCollisionDirection);
+							}
+						}
 
 						const auto& collidersToCheck = currentObjectToCheck->getColliders();
 						if (currentObjectToCheck->collides(currentDynamicObject->getObjectType()) && !collidersToCheck.empty())
@@ -301,7 +291,7 @@ namespace Physics
 					if (pRT->getCurrentVelocity() != 0)
 					{
 						switch (pRT->getOrintationTank())
-						{	
+						{
 						case Tank::EOrientation::Right:
 							posRT = glm::vec2(posRT.x + Level::BLOCK_SIZE, posRT.y);
 							break;
@@ -365,44 +355,27 @@ namespace Physics
 				}
 			}
 		}
-		else
+	}
+
+  	IGameObject* PhysicsEngine::getObjectUnderTank(Tank& tank)
+	{
+
+		if (m_pGameManager == nullptr)
 		{
-			if (t1->getCurrentVelocity() != 0)
-			{
-				switch (t1->getOrintationTank())
-				{
-				case Tank::EOrientation::Right:
-					t1->getTargetPosition() -= glm::vec2(Level::BLOCK_SIZE, 0);
-					break;
-				case Tank::EOrientation::Left:
-					t1->getTargetPosition() += glm::vec2(Level::BLOCK_SIZE, 0);
-					break;
-				case Tank::EOrientation::Bottom:
-					t1->getTargetPosition() += glm::vec2(0, Level::BLOCK_SIZE);
-					break;
-				case Tank::EOrientation::Top:
-					t1->getTargetPosition() -= glm::vec2(0, Level::BLOCK_SIZE);
-					break;
-				}
-			}
-			else
-			{
-				switch (t2->getOrintationTank())
-				{
-				case Tank::EOrientation::Right:
-					t2->getTargetPosition() -= glm::vec2(Level::BLOCK_SIZE, 0);
-					break;
-				case Tank::EOrientation::Left:
-					t2->getTargetPosition() += glm::vec2(Level::BLOCK_SIZE, 0);
-					break;
-				case Tank::EOrientation::Bottom:
-					t2->getTargetPosition() += glm::vec2(0, Level::BLOCK_SIZE);
-					break;
-				case Tank::EOrientation::Top:
-					t2->getTargetPosition() -= glm::vec2(0, Level::BLOCK_SIZE);
-					break;
-				}
-			}
+			std::cerr << "ERROR: Attempt to get level info with null pointer on GameManager: PhysicsEngine::getObjectUnderTank() \n";
+			std::abort();
 		}
+
+		glm::vec2 positionTank = tank.getCurrentPosition();
+		glm::vec2 windowScaleInPixels = m_pGameManager->getScaleScreenInPixels();
+		glm::ivec2 correctedPositionTank = glm::vec2(std::clamp(std::round(positionTank.x - Level::BLOCK_SIZE), 0.f, static_cast<float>(windowScaleInPixels.x)), std::clamp(std::round(windowScaleInPixels.y - positionTank.y) + Level::BLOCK_SIZE / 2, 0.f, static_cast<float>(windowScaleInPixels.y)));
+
+		int blockX = std::round(float(correctedPositionTank.x) / 16);
+		int blockY = std::round(float(correctedPositionTank.y) / 16);
+
+		
+		IGameObject* res = m_pGameManager->getObjectByIndex(static_cast<unsigned int>((blockY - 1) * m_pGameManager->getScaleScreenInBlocks().x + blockX));
+
+		return res;
 	}
 }
