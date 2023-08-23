@@ -9,7 +9,7 @@ public:
 	void update(const double delta);
 	void start(const double duration);
 	void setCallback(std::function<void()> callback);
-
+	void stop();
 private:
 	std::function<void()> m_callback;
 	double m_timeLeft;

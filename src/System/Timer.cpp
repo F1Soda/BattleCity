@@ -30,3 +30,8 @@ void Timer::setCallback(std::function<void()> callback)
 {
 	m_callback = callback;
 }
+
+void Timer::stop()
+{
+	m_isRunning = false;
+}

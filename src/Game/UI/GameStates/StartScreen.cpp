@@ -43,7 +43,7 @@ StartScreen::StartScreen(const std::vector<std::string>& startScreenDescription,
 	}
 
     m_waitOneSecondBeforStartTimer.setCallback([&]() { canStart = true;  });
-    m_waitOneSecondBeforStartTimer.start(500);
+    m_waitOneSecondBeforStartTimer.start(400);
 }
 
 void StartScreen::render() const 
@@ -118,6 +118,7 @@ std::shared_ptr<RenderEngine::Sprite> getSpriteForDescription(const char descrip
 
 void StartScreen::processInput(std::array<char, 349>& keys)
 {
+
     if (!canStart)
         return;
 
@@ -133,6 +134,7 @@ void StartScreen::processInput(std::array<char, 349>& keys)
             --m_currentMenuSelection;
             if (m_currentMenuSelection < 0)
                 m_currentMenuSelection = 2;
+            m_pGameManager->playSound(AudioManager::EAudioType::NavigateInMenu);
         }
         else if (keys[GLFW_KEY_S])
         {
@@ -140,11 +142,13 @@ void StartScreen::processInput(std::array<char, 349>& keys)
             ++m_currentMenuSelection;
             if (m_currentMenuSelection > 2)
                 m_currentMenuSelection = 0;
+            m_pGameManager->playSound(AudioManager::EAudioType::NavigateInMenu);
         }
 
         if (keys[GLFW_KEY_ESCAPE])
         {
             m_pGame->exit();
+            m_pGameManager->playSound(AudioManager::EAudioType::SelectInMenu);
         }
 
     }
@@ -154,10 +158,12 @@ void StartScreen::processInput(std::array<char, 349>& keys)
         switch (m_currentMenuSelection)
         {
         case 0:
+            m_pGameManager->playSound(AudioManager::EAudioType::SelectInMenu);
             m_pGame->startNewLevel(0, Game::EGameMode::OnePlayer);
             break;
         case 1:
-            m_pGame->startNewLevel(0, Game::EGameMode::TwoPlayer);
+            m_pGameManager->playSound(AudioManager::EAudioType::SelectInMenu);
+            m_pGame->startNewLevel(0, Game::EGameMode::TwoPlayer, Tank::ETankType::Player1Yellow_type1, Tank::ETankType::Player2Green_type1);
             break;
         default:
             break;

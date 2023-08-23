@@ -2047,8 +2047,10 @@
                 "DDDDK0E2LDDDD"
             ],
             "enemies": [
-                { "type4": 1 },
-                { "type2" : 0 }
+                { "type1": 1 },
+                { "type2": 1 },
+                { "type3": 1 },
+                { "type4": 1 }
             ]
         },
 
@@ -2070,22 +2072,18 @@
                 "DDDDK0E2LDDDD"
             ],
             "enemies": [
-                { "type1": 1 }
+                { "type1": 2 },
+                { "type4": 0 }
             ]
         },
 
         {
             "description": [
-                "D9N9D",
-                "D9M9D",
-                "D9O9D",
-                "D9D9D",
-                "D9D9D",
-                "D9D9D",
-                "D9D9D",
-                "D9D9D",
-                "D9D9D",
-                "D9K9D"
+                "DDDDD",
+                "DD9DD",
+                "DDDDD",
+                "DDKDD"
+
             ],
             "enemies": [
                 { "type2": 2 }

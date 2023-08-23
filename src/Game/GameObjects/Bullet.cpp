@@ -6,9 +6,10 @@
 #include "Bullet.h"
 #include "Tank.h"
 #include <iostream>
+#include "../GameManager.h"
 
 Bullet::Bullet(const double velocity, const glm::vec2& position,
-	glm::vec2& size, glm::vec2& explosionSize, const float layer)
+	glm::vec2& size, glm::vec2& explosionSize, const float layer, GameManager* pGameManager)
 	: IGameObject(position, size, 0.f, layer, EObjectType::Bullet)
 	, m_explosionSize(explosionSize)
 	, m_explosionOffset((m_explosionSize - m_size))
@@ -20,15 +21,19 @@ Bullet::Bullet(const double velocity, const glm::vec2& position,
 	, m_spriteAnimator_explosion(m_pSprite_explosion)
 	, m_eOrientation(EOrientation::Top)
 	, m_isActive(false)
-	, m_maxVelocity(velocity)
+	, m_maxVelocityTank(velocity)
 	, m_isExplosion(false)
+	, m_pGameManager(pGameManager)
+	, m_canDestroyBetton(false)
 {
 	m_velocity = 0;
 	auto onCollisionCallback = [&](const IGameObject& object, const Physics::ECollisionDirection direction)
 	{
+		//m_pGameManager->playSound(AudioManager::EAudioType::Explosion);
 		setVelocity(0);
 		m_isExplosion = true;
 		m_explosionTimer.start(m_spriteAnimator_explosion.getTotalDuration());
+		
 		//Bullet::onCollisionCallback(object, direction);
 	};
 		
@@ -37,6 +42,7 @@ Bullet::Bullet(const double velocity, const glm::vec2& position,
 
 	m_explosionTimer.setCallback([&]()
 		{
+			Physics::PhysicsEngine::nullifyDyanmicObject(this);
 			m_isExplosion = false;
 			m_isActive = false;
 			m_spriteAnimator_explosion.reset();
@@ -110,7 +116,7 @@ void Bullet::fire(const glm::vec2& position, const glm::vec2& direction)
 		m_eOrientation = (m_direction.x < 0) ? EOrientation::Left : EOrientation::Right;
 	}
 	m_isActive = true;
-	setVelocity(m_maxVelocity);
+	setVelocity(m_maxVelocityTank);
 
 }
 

@@ -4,6 +4,7 @@
 #include <memory>
 #include <glm/vec2.hpp>
 #include <functional>
+#include <stack>
 
 class IGameObject;
 class Level;
@@ -68,22 +69,28 @@ namespace Physics
 		static void addDynamicGameObject(std::shared_ptr<IGameObject> pGameObject);
 		static void removeDynamicGameObject(std::shared_ptr<IGameObject> pGameObject);
 		static void setCurrentLevel(std::shared_ptr<Level> pLevel);
-
+		static void nullifyDyanmicObject(IGameObject* pGameObject);
+		static void addDynamicObjectInNextFrame(std::shared_ptr<IGameObject> object);
+		static IGameObject* getObjectByPos(glm::vec2 pos);
+		static int getObjectIndexByPos(glm::vec2 pos);
 	private:
-		static std::unordered_set<std::shared_ptr<IGameObject>> m_dynamicObjects;
+		//static std::unordered_set<std::shared_ptr<IGameObject>> m_dynamicObjects;
+		static std::vector<std::shared_ptr<IGameObject>> m_dynamicObjects;
 		static std::shared_ptr<Level> m_pCurrentLevel;
 
 		static bool PhysicsEngine::hasCollidersIntersection(const Collider& collider1, const glm::vec2 position1, const Collider& collider2, const glm::vec2 position2, bool forTanks = false);
 		static bool PhysicsEngine::hasPositionIntersection(const std::shared_ptr<IGameObject>& pObject1, const glm::vec2 position1, const std::shared_ptr<IGameObject>& pObject2, const glm::vec2 position2, bool forTanks = false);
 
-		static void calculateTargetPositions(std::unordered_set<std::shared_ptr<IGameObject>> dynamicObjects, const double delta);
-		static void updatePosition(std::unordered_set<std::shared_ptr<IGameObject>> dynamicObjects);
+		static void calculateTargetPositions(std::vector<std::shared_ptr<IGameObject>>& dynamicObjects, const double delta);
+		static void updatePosition(std::vector<std::shared_ptr<IGameObject>>& dynamicObjects);
 
 		static IGameObject* getObjectUnderTank(Tank& tank);
 
 		static void checkIfTankInTank(Tank* t1, Tank* t2);
 
-		 static GameManager* m_pGameManager;
+		static std::stack<std::shared_ptr<IGameObject>> m_objectToAddInNextFrame;
 
+		static GameManager* m_pGameManager;
+		
 	};
 }

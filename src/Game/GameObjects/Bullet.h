@@ -4,6 +4,8 @@
 #include <array>
 #include "IGameObject.h"
 
+class GameManager;
+
 
 namespace RenderEngine
 {
@@ -27,14 +29,15 @@ public:
 	};
 
 	Bullet(const double velocity, const glm::vec2& position,
-		 glm::vec2& size, glm::vec2& explosionSize ,const float layer);
+		 glm::vec2& size, glm::vec2& explosionSize ,const float layer, GameManager* pGameManager);
 	virtual void render() const override;
 	void update(const double delta) override;
 	bool isActive() const { return m_isActive; }
 	bool isExplosioning() const { return m_isExplosion; }
 	void fire(const glm::vec2& position, const glm::vec2& direction);
 	void onCollision(IGameObject& object) override;
-		
+	bool canDestroyBetton() const { return m_canDestroyBetton; }
+	void setCanDestroyBetton(bool var) { m_canDestroyBetton = var; }
 private:
 
 	void onCollisionCallback(const IGameObject& object, const Physics::ECollisionDirection direction);
@@ -50,6 +53,8 @@ private:
 	RenderEngine::SpriteAnimator m_spriteAnimator_explosion;
 	Timer m_explosionTimer;
 	bool m_isActive;
-	double m_maxVelocity;
+	double m_maxVelocityTank;
+	bool m_canDestroyBetton;
 	bool m_isExplosion;
+	GameManager* m_pGameManager;
 };

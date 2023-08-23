@@ -90,13 +90,15 @@ bool Game::init()
     }
     m_pSpriteShaderProgram->use();
     m_pSpriteShaderProgram->setInt("tex", 0);
-    startNewLevel(1 , Game::EGameMode::OnePlayer);
-    //setStartScreen(); 
+    //startNewLevel(0, Game::EGameMode::TwoPlayer, Tank::ETankType::Player1Yellow_type1, Tank::ETankType::Player2Green_type1); //Tank::ETankType::Player1Yellow_type4);
+    setStartScreen(); 
     //gameOver(glm::vec2(m_pCurrentGameState->getStateWidth(), m_pCurrentGameState->getStateHeight()));//glm::vec2(Level::BLOCK_SIZE*13, Level::BLOCK_SIZE * 14));
     setWindowSize(m_windowSize);
     updateViewport();
 
     AIComponent::m_eEnemyState = AIComponent::EEnemyState::Ñhaotic;
+
+    m_pGameManager->setSoundOff();
 
     return true;
 
@@ -111,12 +113,16 @@ unsigned int Game::getCurrentHeight() const
     return m_pCurrentGameState->getStateHeight();
 } 
  
-void Game::startNewLevel(const size_t level, const EGameMode eGameMode)
+void Game::startNewLevel(const size_t level, const EGameMode eGameMode, Tank::ETankType typeTank1, Tank::ETankType typeTank2 , int beginingLifesTank1, int beginigLifesTank2)
 {
     m_currentLevelIndex = level;
     m_currentGameMode = eGameMode;
     auto levelDes = (*Resources::ResourceManager::getLevels())[level];
-    auto pLevel = std::make_shared<Level>(levelDes.mapStructure, levelDes.enemiesTypeMaps, eGameMode, m_pGameManager.get());
+    auto pLevel = std::make_shared<Level>(levelDes.mapStructure, levelDes.enemiesTypeMaps, eGameMode, m_pGameManager.get(), typeTank1,
+        typeTank2,
+        beginingLifesTank1,
+        beginigLifesTank2
+    );
     Physics::PhysicsEngine::setCurrentLevel(pLevel);
     m_pGameManager->setCrrentLevel(pLevel.get());
     m_pCurrentGameState = pLevel;
@@ -159,12 +165,12 @@ void Game::updateViewport()
     m_pUIShaderProgram->setMatrix4("projectionMat", projectionMatrix);
 }
 
-void Game::nextLevel(const EGameMode eGameMode)
+void Game::nextLevel(const EGameMode eGameMode, Tank* pTank1, Tank* pTank2)
 {
     m_currentLevelIndex++;
     m_currentLevelIndex %= m_countLevels;
     //std::cout << "YOU WIN" << std::endl;
-    startNewLevel(m_currentLevelIndex, eGameMode);
+    startNewLevel(m_currentLevelIndex, eGameMode, pTank1->getTankType(), pTank2 ? pTank2->getTankType() : Tank::ETankType::EnemyGreen_type1, pTank1->getCountLeftLifes(), pTank2? pTank2->getCountLeftLifes() : 3);
 }
 
 void Game::setStartScreen()
@@ -187,9 +193,9 @@ void Game::gameOver(glm::vec2& scaleScreen)
        
 }
 
-void Game::restart()
+void Game::restart(Tank* pTank1, Tank* pTank2)
 {
-    startNewLevel(m_currentLevelIndex, m_currentGameMode);
+    startNewLevel(m_currentLevelIndex, m_currentGameMode, pTank1->getTankType(), pTank2 ? pTank2->getTankType() : Tank::ETankType::EnemyGreen_type1, pTank1->getCountLeftLifes(), pTank2 ? pTank2->getCountLeftLifes() : 3);
 }
 
 void Game::pauseWhenChangingSizeOrPosionWindow()

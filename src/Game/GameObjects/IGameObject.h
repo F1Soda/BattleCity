@@ -19,6 +19,7 @@ public:
 		Tank,
 		Trees,
 		Water,
+		Bonus,
 
 		Empty,
 		Unknown

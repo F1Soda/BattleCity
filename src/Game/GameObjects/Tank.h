@@ -87,24 +87,27 @@ public:
 		Idle=4
 	};
 
-    Tank::Tank(const Tank::ETankType eType,
+    Tank(const Tank::ETankType eType,
         Level* pLevel,
         const bool bHasAI,
         const bool bShieldOnSpawn,
         const EOrientation m_eOrientation,
-        const double maxVelocity,
+        const double maxVelocityTank,
+        const double maxVelocityBullet,
         const glm::vec2& position,
         const glm::vec2& size,
         const float layer,
-        GameManager* gameManager);
+        GameManager* gameManager,
+        const bool isBonusTank,
+        int beginingLifes = 3);
 
 	void render() const override;
 	void setOrientation(const EOrientation eOrientation);
 	void update(const double delta) override;
-	double getMaxVelocity() const { return m_maxVelocity; }
+	double getMaxVelocity() const { return m_maxVelocityTank; }
 	void setVelocity(const double velocity) override;
 	void fire();
-    void setHeadOnCollision(bool val);
+    //void setHeadOnCollision(bool val);
     Tank::EOrientation getOrintationTank() const { return m_eOrientation; }
     void onCollision(IGameObject& object) override;
 
@@ -112,20 +115,27 @@ public:
 
     void destroy();
 
-    std::shared_ptr<Bullet> getCurrentBullet() const { return m_pCurrentBullet; }
+    std::shared_ptr<Bullet> getCurrentBullet() const { return m_pCurrentBullet1; }
 
     Tank::ETankType getTankType() const { return m_type; }
     int getCountLeftLifes() const { return m_lifes; }
-    void reduceCountLifes() { m_lifes--; }
+    void reduceCountLifes();
+    void addLife() { m_lifes++; }
     const bool m_isEnemyTank;
+    bool canDestroyBetton() const { return m_canDestroyBetton; }
 
+    void activateShield(double duration);
+    void levelUp();
     void respawn();
-
+    void setTankType(ETankType type);
+    bool isDestroyed() const { return m_isDestroyed; }
+    bool isSpawning() const { return m_isSpawning; }
 private:
 
 	EOrientation m_eOrientation;
 
-	std::shared_ptr<Bullet> m_pCurrentBullet;
+	std::shared_ptr<Bullet> m_pCurrentBullet1;
+    std::shared_ptr<Bullet> m_pCurrentBullet2;
     Level* m_pLevel;
     GameManager* m_pGameManager;
 
@@ -159,14 +169,26 @@ private:
 	Timer m_shieldTimer;
     Timer m_explosionTimer;
     Timer m_iceDriceTimer;
+    Timer m_twiceShootTimer;
+    mutable Timer m_changeColorTimer;
 
-	double m_maxVelocity;
+    double m_timerBetweenTwiceShoot = 300;
+    double m_timeBetweenChangingColor = 100;
+
+	double m_maxVelocityTank;
+    double m_maxVelocityBullet;
 	bool m_isSpawning;
 	bool m_hasShield;
     bool m_bShieldOnSpawn;
     bool m_canDrive;
+    bool m_canFire;
+    bool m_canDestroyBetton;
+    bool m_isBonusTank;
+    mutable bool m_changeColorToRed;
+    mutable  bool m_changeColorToGreen;
 
-    int m_health;
+    std::vector<std::shared_ptr<RenderEngine::Sprite>> m_redSprites;
+    std::vector<std::shared_ptr<RenderEngine::Sprite>> m_greenSprites;
 
     bool m_isDestroyed;
 
@@ -175,4 +197,5 @@ private:
     int m_lifes;
 
     static const std::string& getTankSpriteFromType(const ETankType eTankType);
+ 
 };

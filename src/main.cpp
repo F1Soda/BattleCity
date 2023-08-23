@@ -7,6 +7,7 @@
 #include <iostream>
 
 
+
 #include "Game/Game.h"
 #include "Game/UI/GameStates/Level.h"
 #include"Resources/ResourceManager.h"
@@ -43,6 +44,7 @@ void window_pos_callback(GLFWwindow* window, int xpos, int ypos);
 int main(int argc, char** argv)
 {
     
+
     /* Initialize the library */
     if (!glfwInit())
     {
@@ -124,8 +126,9 @@ int main(int argc, char** argv)
             }
             // -------------- debug mode -------------- \\ 
             //debugLogInConsole(duration);
-
             g_game->render();
+            
+            
 
             // Менает местами буферы
             glfwSwapBuffers(Game::pWindow);

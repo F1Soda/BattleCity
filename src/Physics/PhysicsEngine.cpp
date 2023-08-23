@@ -4,13 +4,15 @@
 #include "../Game/GameObjects/Tank.h"
 #include <iostream>
 #include <algorithm>
+#include "../Game/GameObjects/Bullet.h"
 //#include "../Game/GameManager.h" // nothing including 
 
 namespace Physics
 {
 	bool isSetNewLevel = false;
 
-	std::unordered_set<std::shared_ptr<IGameObject>> PhysicsEngine::m_dynamicObjects;
+	std::vector<std::shared_ptr<IGameObject>> PhysicsEngine::m_dynamicObjects;
+	std::stack<std::shared_ptr<IGameObject>> PhysicsEngine::m_objectToAddInNextFrame;
 	std::shared_ptr<Level> PhysicsEngine::m_pCurrentLevel;
 	GameManager* PhysicsEngine::m_pGameManager;
 	void PhysicsEngine::init(GameManager* pGameManager)
@@ -25,39 +27,71 @@ namespace Physics
 
 	void PhysicsEngine::update(const double delta)
 	{
+	
+		bool bonusWasUsed = false;
 
+		//m_dynamicObjects.erase(std::remove(m_dynamicObjects.begin(), m_dynamicObjects.end(), nullptr), m_dynamicObjects.end());
 		calculateTargetPositions(m_dynamicObjects, delta);
-		
+		//std::vector < std::shared_ptr<IGameObject>>::iterator it;
 		//check collisions
-
 		for (auto it1 = m_dynamicObjects.begin(); it1 != m_dynamicObjects.end();)
 		{
 			auto pObject1 = *it1;
 			for (auto it2 = ++it1; it2 != m_dynamicObjects.end(); ++it2)
 			{
+				auto pObject2 = *it2;
+
+				if (pObject1 == nullptr || pObject2 == nullptr)
+				{
+					continue;
+				}
+
+				if (it1 == m_dynamicObjects.end() || it2 == m_dynamicObjects.end())
+				{
+					std::cerr << "";
+				}
 
 				
-
-
-				auto pObject2 = *it2;
-				if (pObject1->getOwner() == pObject2.get() || pObject2->getOwner() == pObject1.get())
-					continue;
-
 				if (pObject1->getCurrentVelocity() == 0 && pObject1->getObjectType() == IGameObject::EObjectType::Bullet)
 					continue;
 				if (pObject2->getCurrentVelocity() == 0 && pObject2->getObjectType() == IGameObject::EObjectType::Bullet)
 					continue;
 
-				
+				if (pObject1->getOwner() == pObject2.get() || pObject2->getOwner() == pObject1.get())
+ 					continue;
 
 				if ( ! (hasPositionIntersection(pObject1, pObject1->getTargetPosition(), pObject2, pObject2->getTargetPosition())))
 				{
 					continue;
 				}
 
+				if (pObject1->getObjectType() == IGameObject::EObjectType::Bonus )
+				{
+					if (pObject2->getObjectType() == IGameObject::EObjectType::Tank && hasPositionIntersection(pObject2, pObject2->getTargetPosition(), pObject1, pObject1->getCurrentPosition(), true) && !dynamic_cast<Tank*>(pObject2.get())->m_isEnemyTank && !bonusWasUsed)
+					{
+						pObject1->onCollision(*pObject2);
+					}
+
+					bonusWasUsed = true;
+
+					continue;
+					//goto Exit;
+				}
+				else if (pObject2->getObjectType() == IGameObject::EObjectType::Bonus)
+				{
+					if (pObject1->getObjectType() == IGameObject::EObjectType::Tank && hasPositionIntersection(pObject1, pObject1->getTargetPosition(), pObject2, pObject2->getCurrentPosition(), true) && !dynamic_cast<Tank*>(pObject1.get())->m_isEnemyTank && !bonusWasUsed)
+					{
+						pObject2->onCollision(*pObject1);
+					}
+					bonusWasUsed = true;
+					continue;
+					//goto Exit;
+				}
+
 
 				if (hasPositionIntersection(pObject1, pObject1->getTargetPosition(), pObject2, pObject2->getCurrentPosition(), true) && pObject2->isActive() && pObject1->isActive())
 				{
+
 					pObject1->getTargetPosition() = pObject1->getCurrentPosition();
 					pObject1->onCollision(*pObject2);
 					pObject2->onCollision(*pObject1);
@@ -70,7 +104,6 @@ namespace Physics
  								tank1->setOrientation(Tank::EOrientation((int(tank1->getOrintationTank()) + 2) % 4));
 								checkIfTankInTank(tank1, tank2);
 							}
-
 					}
 				}
 				if (hasPositionIntersection(pObject2, pObject2->getTargetPosition(), pObject1, pObject1->getCurrentPosition(), true) && pObject2->isActive() && pObject1->isActive())
@@ -99,7 +132,23 @@ namespace Physics
 				}
 			}
 		}
+		//std::vector < std::shared_ptr<IGameObject>>::iterator;
+		//t = ;
+		//if (it != m_dynamicObjects.end())
+		//{
+			//std::cout << "";
+		//}
+		m_dynamicObjects.erase(std::remove(m_dynamicObjects.begin(), m_dynamicObjects.end(), nullptr), m_dynamicObjects.end());
+
 		updatePosition(m_dynamicObjects); // CurrentPosition = TargetPosition;
+
+		while (!m_objectToAddInNextFrame.empty())
+		{
+			m_dynamicObjects.push_back(m_objectToAddInNextFrame.top());
+			m_objectToAddInNextFrame.pop();
+		}
+
+		
 
 		Exit:
 			std::cout << "";
@@ -107,12 +156,21 @@ namespace Physics
 
 	void PhysicsEngine::addDynamicGameObject(std::shared_ptr<IGameObject> pGameObject)
 	{
-		m_dynamicObjects.insert(std::move(pGameObject));
+		m_dynamicObjects.push_back(std::move(pGameObject));
 	}
 
 	void PhysicsEngine::removeDynamicGameObject(std::shared_ptr<IGameObject> pGameObject)
 	{
-		m_dynamicObjects.erase(pGameObject);
+		for (auto it = m_dynamicObjects.begin(); it != m_dynamicObjects.end(); it++)
+		{
+			if ((*it).get() == pGameObject.get())
+			{
+				m_dynamicObjects.erase(it);
+				break;
+			}
+		}
+
+		
 	}
 
 	void PhysicsEngine::setCurrentLevel(std::shared_ptr<Level> pLevel)
@@ -146,13 +204,13 @@ namespace Physics
 		return true;
 	}
 
-	void PhysicsEngine::calculateTargetPositions(std::unordered_set<std::shared_ptr<IGameObject>> dynamicObjects, const double delta)
+	void PhysicsEngine::calculateTargetPositions(std::vector<std::shared_ptr<IGameObject>>& dynamicObjects, const double delta)
 	{
 
 		for (auto& currentDynamicObject : dynamicObjects)
 		{
 
-			if (currentDynamicObject->getCurrentVelocity() > 0)
+			if (currentDynamicObject.get() && currentDynamicObject->getCurrentVelocity() > 0 && currentDynamicObject->isActive())
 			{
 				// align position to multiple of 4 pixels
 				if (currentDynamicObject->getCurrentDirection().x != 0.f)
@@ -196,12 +254,20 @@ namespace Physics
 								currentDynamicObject->getColliders()[0].onCollisionCallback(*currentObjectToCheck, dynamicObjectCollisionDirection);
 							}
 						}
-
-						const auto& collidersToCheck = currentObjectToCheck->getColliders();
+						bool debBool = currentObjectToCheck->getObjectType() == IGameObject::EObjectType::BettonWall;
+  						const auto& collidersToCheck = currentObjectToCheck->getColliders();
+						bool debBool2 = currentDynamicObject->getObjectType() == IGameObject::EObjectType::Bullet;
 						if (currentObjectToCheck->collides(currentDynamicObject->getObjectType()) && !collidersToCheck.empty())
 						{
 							for (const auto& currentObjectCollider : currentObjectToCheck->getColliders())
 							{
+
+								Bullet* bullet;
+								if (debBool2)
+								{
+									IGameObject* obj = const_cast<IGameObject*>(currentDynamicObject.get());
+									bullet = dynamic_cast<Bullet*>(obj);
+								}
 								if (currentObjectCollider.isActive && hasCollidersIntersection(currentDynamicObjectCollider, newPosition, currentObjectCollider, currentObjectToCheck->getCurrentPosition()))
 								{
 									hasCollision = true;
@@ -224,6 +290,8 @@ namespace Physics
 					currentDynamicObject->getTargetPosition() = newPosition;
 				else
 				{
+					if (!currentDynamicObject.get()) continue;
+
 					// align position to multiple of 4 pixels
 					if (currentDynamicObject->getCurrentDirection().x != 0.f)
 					{
@@ -241,7 +309,7 @@ namespace Physics
 		}
 	}
 
-	void PhysicsEngine::updatePosition(std::unordered_set<std::shared_ptr<IGameObject>> dynamicObjects)
+	void PhysicsEngine::updatePosition(std::vector<std::shared_ptr<IGameObject>>& dynamicObjects)
 	{
 		for (auto& currentDynamicObject : dynamicObjects)
 		{
@@ -370,12 +438,58 @@ namespace Physics
 		glm::vec2 windowScaleInPixels = m_pGameManager->getScaleScreenInPixels();
 		glm::ivec2 correctedPositionTank = glm::vec2(std::clamp(std::round(positionTank.x - Level::BLOCK_SIZE), 0.f, static_cast<float>(windowScaleInPixels.x)), std::clamp(std::round(windowScaleInPixels.y - positionTank.y) + Level::BLOCK_SIZE / 2, 0.f, static_cast<float>(windowScaleInPixels.y)));
 
-		int blockX = std::round(float(correctedPositionTank.x) / 16);
-		int blockY = std::round(float(correctedPositionTank.y) / 16);
+		int blockX = static_cast<int>(std::round(float(correctedPositionTank.x) / 16.f));
+		int blockY = static_cast<int>(std::round(float(correctedPositionTank.y) / 16.f));
 
 		
 		IGameObject* res = m_pGameManager->getObjectByIndex(static_cast<unsigned int>((blockY - 1) * m_pGameManager->getScaleScreenInBlocks().x + blockX));
 
 		return res;
 	}
+
+
+	void PhysicsEngine::nullifyDyanmicObject(IGameObject* pGameObject)
+	{
+		for (auto it = m_dynamicObjects.begin(); it != m_dynamicObjects.end(); it++)
+		{
+			if ((*it).get() == pGameObject)
+			{
+ 				(*it) = nullptr;
+				break;
+			}
+		}
+	}
+
+	void PhysicsEngine::addDynamicObjectInNextFrame(std::shared_ptr<IGameObject> object)
+	{
+		m_objectToAddInNextFrame.push(object);
+	}
+
+
+	IGameObject* PhysicsEngine::getObjectByPos(glm::vec2 pos)
+	{
+		glm::vec2 windowScaleInPixels = m_pGameManager->getScaleScreenInPixels();
+		glm::ivec2 correctedPositionTank = glm::vec2(std::clamp(std::round(pos.x - Level::BLOCK_SIZE), 0.f, static_cast<float>(windowScaleInPixels.x)), std::clamp(std::round(windowScaleInPixels.y - pos.y) + Level::BLOCK_SIZE / 2, 0.f, static_cast<float>(windowScaleInPixels.y)));
+
+		int blockX = static_cast<int>(std::round(float(correctedPositionTank.x) / 16.f));
+		int blockY = static_cast<int>(std::round(float(correctedPositionTank.y) / 16.f));
+
+
+		IGameObject* res = m_pGameManager->getObjectByIndex(static_cast<unsigned int>((blockY - 1) * m_pGameManager->getScaleScreenInBlocks().x + blockX));
+
+		return res;
+	}
+
+	int PhysicsEngine::getObjectIndexByPos(glm::vec2 pos)
+	{
+		glm::vec2 windowScaleInPixels = m_pGameManager->getScaleScreenInPixels();
+		glm::ivec2 correctedPositionTank = glm::vec2(std::clamp(std::round(pos.x - Level::BLOCK_SIZE), 0.f, static_cast<float>(windowScaleInPixels.x)), std::clamp(std::round(windowScaleInPixels.y - pos.y) + Level::BLOCK_SIZE / 2, 0.f, static_cast<float>(windowScaleInPixels.y)));
+
+		int blockX = static_cast<int>(std::round(float(correctedPositionTank.x) / 16.f));
+		int blockY = static_cast<int>(std::round(float(correctedPositionTank.y) / 16.f));
+
+		return static_cast<int>(blockX + (blockY - 1) * m_pCurrentLevel->getSizeLevelInBlocks().x);
+			
+	}
+
 }

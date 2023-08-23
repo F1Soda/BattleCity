@@ -11,9 +11,11 @@ Eagle::Eagle(const glm::vec2& position, const glm::vec2& size, const float rotat
 {
     auto onCollisionCallback = [&](const IGameObject& object, const Physics::ECollisionDirection direction)
         {
-            if (object.getObjectType() == IGameObject::EObjectType::Bullet && dynamic_cast<Tank*>(object.getOwner())->m_isEnemyTank)
+            if (object.getObjectType() == IGameObject::EObjectType::Bullet && dynamic_cast<Tank*>(object.getOwner())->m_isEnemyTank && m_eCurrentState != EEagleState::Dead)
             {
+                m_pGameManager->m_isGameOver = true;
                 m_eCurrentState = EEagleState::Dead;
+                m_pGameManager->playSound(AudioManager::EAudioType::GameOver);
                 gameOverTimer.start(2000);
             }
         };

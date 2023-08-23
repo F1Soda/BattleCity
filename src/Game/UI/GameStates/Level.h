@@ -5,17 +5,20 @@
 #include <set>
 #include "../../Game.h"
 #include "../../GameObjects/Spawner.h"
+#include "../../../System/Timer.h"
 
 class IGameObject;
 struct GLFWwindow;
 class UIMenuLevel;
+class Bonus;
 
 class Level : public IGameState
 {
 public:
 	static constexpr unsigned int BLOCK_SIZE = 16;
 	static const unsigned int DURATION_RESPAWNING = 1500;
-	Level(const std::vector<std::string>& levelDescription, std::unordered_map<Tank::ETankType, int> enemiesTypeMap, const Game::EGameMode eGameMode, GameManager* pGameManager);
+	Level(const std::vector<std::string>& levelDescription, std::unordered_map<Tank::ETankType, int> enemiesTypeMap, const Game::EGameMode eGameMode, GameManager* pGameManager
+		  , Tank::ETankType primalTypeTank1, Tank::ETankType, int beginingLifeTank1, int beginingLifeTank2 = 0);
 	virtual void render() const override;
 	virtual void update(const double  delta) override;
 	virtual unsigned int getStateWidth() const override;
@@ -29,7 +32,9 @@ public:
 	const Spawner* getEnemySpawner_3() const { return m_enemySpawner_3.get(); }
 	const glm::vec2 getWindowSizeInPixels() const;
 	const glm::vec2 getSizeLevelInBlocks() const;
+
 	const std::shared_ptr<IGameObject> getObjectByIndex(unsigned int index) const { return m_levelObjects[index]; }
+
 	void changeLevelObject(unsigned int indexToCahnge, std::shared_ptr<IGameObject> newObject);
 
 	std::vector<std::shared_ptr<IGameObject>> getObjectsInArea(const glm::vec2& bottomLeft, const glm::vec2& topRight);
@@ -50,13 +55,30 @@ public:
 	void destroyEnemyTank(Tank* pTankToDelete);
 	void destroyPlayerTank(Tank* pTank);
 
-	void setPause() { isOnPause = true; }
+	void setPause() { m_isOnPause = true; }
 
+	Tank::ETankType getTypeFirstPlayer() { return m_pTank1->getTankType(); }
+	Tank::ETankType getTypeSecondPlayer() { return m_pTank2->getTankType(); }
+
+	Bonus* createBonus();
+	void destroyBonus(Bonus* pBonus);
+	void freeze(double duration);
+	bool isFreeze()const { return m_isFreeze; }
+	void destroyAllEnemyTanks();
+	void buildFort(double duration);
 private:
 	size_t m_widthBlocks = 0;
 	size_t m_heightBlocks = 0;
 
-	bool isOnPause;
+	bool m_isOnPause;
+	bool m_isFreeze;
+
+	Timer m_freezeTimer;
+
+	Tank::ETankType m_primalTypeTankFirstPlayer;
+	Tank::ETankType m_primalTypeTankSecondPlayer;
+	int m_primalLifesFirstTank;
+	int m_primalLifesSecondTank;
 
 	friend void Spawner::setPosition(glm::vec2 pos);
 
@@ -65,7 +87,11 @@ private:
 
 	unsigned int m_currentCountEnemyTanksOnLevel;
 
+	glm::vec2 m_posEagle;
+
 	size_t m_currentCountPlayersTanks;
+
+	std::vector<std::shared_ptr<Bonus>> m_bonuses;
 
 	std::shared_ptr<Spawner> m_playerSpawner_1;
 	std::shared_ptr<Spawner> m_playerSpawner_2;
@@ -83,9 +109,10 @@ private:
 
 	Timer m_endingLevelTimer;
 	Timer m_respawnTimer;
+	Timer m_betonFortTimer;
 
 	bool isDestroed;
-
+	bool m_isCreatedBettonFort;
 	//                 type,            count 
 	std::unordered_map<Tank::ETankType, int> m_enemiesTankTypeMap;
 
@@ -93,4 +120,6 @@ private:
 	void respawnEnemyTank();
 	void nextLevel();
 	void setStartScreen();
+
+	std::vector<std::shared_ptr<IGameObject>> m_betonWallFort;
 };

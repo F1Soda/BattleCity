@@ -47,7 +47,7 @@ void AIComponent::update(const double delta)
 		m_durationStandingSteal += delta;
 		
 
-		if (m_durationStandingSteal >= 2000 && !freeCeil.empty())
+		if (m_durationStandingSteal >= 1000 && !freeCeil.empty())
 		{
 			m_durationStandingSteal = 0;
 			m_pParentTank->setOrientation(freeCeil[Random::get<int>(0,static_cast<int>(freeCeil.size())-1)]); // !!!!!!!!! TODO: TEST WITHOUT "-1" !!!!!!!!!!!!!!!
