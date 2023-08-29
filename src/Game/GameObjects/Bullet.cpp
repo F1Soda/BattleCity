@@ -42,10 +42,7 @@ Bullet::Bullet(const double velocity, const glm::vec2& position,
 
 	m_explosionTimer.setCallback([&]()
 		{
-			Physics::PhysicsEngine::nullifyDyanmicObject(this);
-			m_isExplosion = false;
-			m_isActive = false;
-			m_spriteAnimator_explosion.reset();
+			destroy();
 
 		}
 	);
@@ -60,16 +57,16 @@ void Bullet::render() const
 			switch (m_eOrientation)
 			{
 			case Bullet::EOrientation::Top:
-				m_pSprite_explosion->render(glm::vec2(m_position.x  - m_explosionOffset.x/2, m_position.y + m_size.y / 4.f), m_explosionSize, m_rotation, m_layer + 0.03f, m_spriteAnimator_explosion.getCurrentFrame());
+				m_pSprite_explosion->render(glm::vec2(m_position.x  - m_explosionOffset.x/2, m_position.y + m_size.y / 4.f), m_explosionSize, m_rotation, m_layer + 1.f, m_spriteAnimator_explosion.getCurrentFrame());
 				break;
 			case Bullet::EOrientation::Bottom:
-				m_pSprite_explosion->render(glm::vec2(m_position.x - m_explosionOffset.x/2, m_position.y - m_size.y ), m_explosionSize, m_rotation, m_layer + 0.03f, m_spriteAnimator_explosion.getCurrentFrame());
+				m_pSprite_explosion->render(glm::vec2(m_position.x - m_explosionOffset.x/2, m_position.y - m_size.y ), m_explosionSize, m_rotation, m_layer + 1.f, m_spriteAnimator_explosion.getCurrentFrame());
 				break;
 			case Bullet::EOrientation::Left:
-				m_pSprite_explosion->render(glm::vec2(m_position.x - m_explosionOffset.x, m_position.y - m_size.y / 3.f), m_explosionSize, m_rotation, m_layer + 0.03f, m_spriteAnimator_explosion.getCurrentFrame());
+				m_pSprite_explosion->render(glm::vec2(m_position.x - m_explosionOffset.x, m_position.y - m_size.y / 3.f), m_explosionSize, m_rotation, m_layer + 1.f, m_spriteAnimator_explosion.getCurrentFrame());
 				break;
 			case Bullet::EOrientation::Right:
-				m_pSprite_explosion->render(glm::vec2(m_position.x + m_explosionOffset.x / 2, m_position.y - m_size.y / 3.f), m_explosionSize, m_rotation, m_layer + 0.03f, m_spriteAnimator_explosion.getCurrentFrame());
+				m_pSprite_explosion->render(glm::vec2(m_position.x + m_explosionOffset.x / 2, m_position.y - m_size.y / 3.f), m_explosionSize, m_rotation, m_layer + 1.f, m_spriteAnimator_explosion.getCurrentFrame());
 				break;
 			}
 		}
@@ -137,7 +134,19 @@ void Bullet::onCollision(IGameObject& object)
 		m_velocity = 0;
 		m_explosionTimer.start(m_spriteAnimator_explosion.getTotalDuration());
 	}
+
+	if (object.getObjectType() == IGameObject::EObjectType::Tank && dynamic_cast<Tank*>(&object)->m_isEnemyTank && dynamic_cast<Tank*>(m_pOwner)->m_isEnemyTank)
+	{
+		destroy();
+	}
+
 }
 
 
- 
+void Bullet::destroy()
+{
+	Physics::PhysicsEngine::nullifyDyanmicObject(this);
+	m_isExplosion = false;
+	m_isActive = false;
+	m_spriteAnimator_explosion.reset();
+}

@@ -28,13 +28,11 @@ Tank::Tank(const Tank::ETankType eType,
     , m_isEnemyTank(bHasAI)
     , m_eOrientation(m_eOrientation)
     , m_pGameManager(gameManager)
-    
     , m_pLevel(pLevel)
     , m_pSprite_top(Resources::ResourceManager::getSprite(getTankSpriteFromType(eType) + "_top"))
     , m_pSprite_bottom(Resources::ResourceManager::getSprite(getTankSpriteFromType(eType) + "_bottom"))
     , m_pSprite_left(Resources::ResourceManager::getSprite(getTankSpriteFromType(eType) + "_left"))
     , m_pSprite_right(Resources::ResourceManager::getSprite(getTankSpriteFromType(eType) + "_right"))
-
     , m_spriteAnimator_top(m_pSprite_top)
     , m_spriteAnimator_bottom(m_pSprite_bottom)
     , m_spriteAnimator_left(m_pSprite_left)
@@ -64,6 +62,9 @@ Tank::Tank(const Tank::ETankType eType,
     , m_isBonusTank(isBonusTank)
     , m_changeColorToGreen(false)
     , m_changeColorToRed(false)
+    , m_greenColor(false)
+    , m_redColor(false)
+    , m_isIceUnderTank(false)
 {
     m_pCurrentBullet1 = std::make_shared<Bullet>(m_maxVelocityBullet, m_position + m_size / 4.f, m_size / 2.f, m_size, layer, m_pGameManager);
 
@@ -85,9 +86,13 @@ Tank::Tank(const Tank::ETankType eType,
 
    
 
-    m_iceDriceTimer.setCallback([&]() {
+    m_iceDriveTimer.setCallback([&]() {
         m_canDrive = true;
         m_velocity = 0;
+        if (m_isEnemyTank)
+        {
+            m_velocity = m_maxVelocityTank;
+        }
         });
 
     setOrientation(m_eOrientation);
@@ -144,7 +149,17 @@ Tank::Tank(const Tank::ETankType eType,
             else if (object.getObjectType() == IGameObject::EObjectType::Ice && canDrive())
             {
                 m_canDrive = false;
-                m_iceDriceTimer.start(timeCantDrivingOnIce);
+                m_iceDriveTimer.start(timeCantDrivingOnIce);
+                m_isIceUnderTank = true;
+                if (m_isEnemyTank)
+                {
+                    m_velocity = m_maxVelocityTank / 2;
+                }
+            }
+            else
+            {
+                m_isIceUnderTank = false;
+                
             }
 
         };
@@ -182,18 +197,7 @@ Tank::Tank(const Tank::ETankType eType,
         std::cout << "Players1 lifes = " << m_lifes << std::endl;
     }
 
-    if (m_lifes > 1 && m_isEnemyTank)
-    {
-        m_greenSprites.reserve(4);
-        m_greenSprites.push_back(Resources::ResourceManager::getSprite("enemy_green_tank_type4_sprite_left"));
-        m_greenSprites.push_back(Resources::ResourceManager::getSprite("enemy_green_tank_type4_sprite_top"));
-        m_greenSprites.push_back(Resources::ResourceManager::getSprite("enemy_green_tank_type4_sprite_right"));
-        m_greenSprites.push_back(Resources::ResourceManager::getSprite("enemy_green_tank_type4_sprite_bottom"));
-
-        m_changeColorToGreen = true;
-        m_changeColorTimer.setCallback([&]() {m_changeColorToGreen = !m_changeColorToGreen; m_changeColorTimer.start(m_timeBetweenChangingColor); });
-        m_changeColorTimer.start(m_timeBetweenChangingColor);
-    }
+    
 
 
     if (m_isBonusTank)
@@ -237,11 +241,31 @@ Tank::Tank(const Tank::ETankType eType,
 
         if (!m_greenSprites.empty()) m_greenSprites.clear();
 
-        m_changeColorTimer.setCallback([&]() {m_changeColorToRed = !m_changeColorToRed; m_changeColorTimer.start(m_timeBetweenChangingColor); });
+        m_changeColorTimer.setCallback([&]() {m_redColor = !m_redColor; m_changeColorTimer.start(m_timeBetweenChangingColor); });
         m_changeColorTimer.start(m_timeBetweenChangingColor);
 
 
     }
+
+    if (m_lifes > 1 && m_isEnemyTank && !m_changeColorToRed)
+    {
+        m_greenSprites.reserve(4);
+        m_greenSprites.push_back(Resources::ResourceManager::getSprite("enemy_green_tank_type4_sprite_left"));
+        m_greenSprites.push_back(Resources::ResourceManager::getSprite("enemy_green_tank_type4_sprite_top"));
+        m_greenSprites.push_back(Resources::ResourceManager::getSprite("enemy_green_tank_type4_sprite_right"));
+        m_greenSprites.push_back(Resources::ResourceManager::getSprite("enemy_green_tank_type4_sprite_bottom"));
+
+        m_changeColorToGreen = true;
+        m_changeColorTimer.setCallback([&]() {m_greenColor = !m_greenColor; m_changeColorTimer.start(m_timeBetweenChangingColor); });
+        m_changeColorTimer.start(m_timeBetweenChangingColor);
+    }
+
+    if (m_pLevel->isFreeze())
+    {
+        m_velocity = 0;
+    }
+
+
 }
 
 void Tank::render() const
@@ -252,102 +276,87 @@ void Tank::render() const
     }
     else if (m_isDestroyed)
     {
-        m_pSprite_bigExplosionLeftTop->render(glm::vec2(m_position.x - Level::BLOCK_SIZE/2, m_position.y + Level::BLOCK_SIZE / 2), m_size, m_rotation, m_layer + 0.1f, m_spriteAnimator_bigExplosionLeftTop.getCurrentFrame());
-        m_pSprite_bigExplosionRightTop->render(m_position + glm::vec2(Level::BLOCK_SIZE / 2), m_size, m_rotation, static_cast<float>(m_layer + 0.1f), m_spriteAnimator_bigExplosionRightTop.getCurrentFrame());
-        m_pSprite_bigExplosionLeftBottom->render(m_position - glm::vec2(Level::BLOCK_SIZE / 2), m_size, m_rotation, m_layer + 0.1f, m_spriteAnimator_bigExplosionLeftBottom.getCurrentFrame());
-        m_pSprite_bigExplosionRightBottom->render(glm::vec2(m_position.x + Level::BLOCK_SIZE / 2, m_position.y - Level::BLOCK_SIZE / 2), m_size, m_rotation, m_layer + 0.1f, m_spriteAnimator_bigExplosionRightBottom.getCurrentFrame());
+        m_pSprite_bigExplosionLeftTop->render(glm::vec2(m_position.x - Level::BLOCK_SIZE/2, m_position.y + Level::BLOCK_SIZE / 2), m_size, m_rotation, m_layer + 1.1f, m_spriteAnimator_bigExplosionLeftTop.getCurrentFrame());
+        m_pSprite_bigExplosionRightTop->render(m_position + glm::vec2(Level::BLOCK_SIZE / 2), m_size, m_rotation, static_cast<float>(m_layer + 1.1f), m_spriteAnimator_bigExplosionRightTop.getCurrentFrame());
+        m_pSprite_bigExplosionLeftBottom->render(m_position - glm::vec2(Level::BLOCK_SIZE / 2), m_size, m_rotation, m_layer + 1.1f, m_spriteAnimator_bigExplosionLeftBottom.getCurrentFrame());
+        m_pSprite_bigExplosionRightBottom->render(glm::vec2(m_position.x + Level::BLOCK_SIZE / 2, m_position.y - Level::BLOCK_SIZE / 2), m_size, m_rotation, m_layer + 1.1f, m_spriteAnimator_bigExplosionRightBottom.getCurrentFrame());
     }
     else if (m_isActive)
     {
-        try
+        switch (m_eOrientation)
         {
-
-            if (m_redSprites.size() != 4 && m_isBonusTank)
+        case Tank::EOrientation::Top:
+            if (m_isBonusTank && m_redColor)
             {
-                std::cerr << "";
+                //m_changeColorToRed = false;
+                m_redSprites.at(int(Tank::EOrientation::Top))->render(m_position, m_size, m_rotation, m_layer,
+                    m_spriteAnimator_top.getCurrentFrame());
             }
-        
-
-            switch (m_eOrientation)
+            else if (m_greenColor)
             {
-            case Tank::EOrientation::Top:
-                if (m_isBonusTank && m_changeColorToRed)
-                {
-                    //m_changeColorToRed = false;
-                    m_redSprites.at(int(Tank::EOrientation::Top))->render(m_position, m_size, m_rotation, m_layer,
-                        m_spriteAnimator_top.getCurrentFrame());
-                }
-                else if (m_changeColorToGreen)
-                {
-                    m_greenSprites.at(int(Tank::EOrientation::Top))->render(m_position, m_size, m_rotation, m_layer,
-                        m_spriteAnimator_top.getCurrentFrame());
-                }
-
-                else
-                {
-                    m_pSprite_top->render(m_position, m_size, m_rotation, m_layer, m_spriteAnimator_top.getCurrentFrame());
-                }
-                break;
-            case Tank::EOrientation::Bottom:
-                if (m_isBonusTank && m_changeColorToRed)
-                {
-                    //m_changeColorTimer.start(m_timeBetweenChangingColor);
-                    //m_changeColorToRed = false;
-                    m_redSprites.at(int(Tank::EOrientation::Bottom))->render(m_position, m_size, m_rotation, m_layer,
-                        m_spriteAnimator_bottom.getCurrentFrame());
-                }
-                else if (m_changeColorToGreen)
-                {
-                    m_greenSprites[int(Tank::EOrientation::Bottom)]->render(m_position, m_size, m_rotation, m_layer,
-                        m_spriteAnimator_bottom.getCurrentFrame());
-                }
-                else
-                {
-                    m_pSprite_bottom->render(m_position, m_size, m_rotation, m_layer, m_spriteAnimator_bottom.getCurrentFrame());
-                }
-                break;
-            case Tank::EOrientation::Left:
-                if (m_isBonusTank && m_changeColorToRed)
-                {
-                    //m_changeColorTimer.start(m_timeBetweenChangingColor);
-                    //m_changeColorToRed = false;
-                    m_redSprites.at(int(Tank::EOrientation::Left))->render(m_position, m_size, m_rotation, m_layer,
-                        m_spriteAnimator_left.getCurrentFrame());
-                }
-                else if (m_changeColorToGreen)
-                {
-                    m_greenSprites[int(Tank::EOrientation::Left)]->render(m_position, m_size, m_rotation, m_layer,
-                        m_spriteAnimator_left.getCurrentFrame());
-                }
-                else
-                {
-                    m_pSprite_left->render(m_position, m_size, m_rotation, m_layer, m_spriteAnimator_left.getCurrentFrame());
-                }
-                break;
-            case Tank::EOrientation::Right:
-                if (m_isBonusTank && m_changeColorToRed)
-                {
-                    //m_changeColorTimer.start(m_timeBetweenChangingColor);
-                    //m_changeColorToRed = false;
-                    m_redSprites.at(int(Tank::EOrientation::Right))->render(m_position, m_size, m_rotation, m_layer,
-                        m_spriteAnimator_right.getCurrentFrame());
-                }
-                else if (m_changeColorToGreen)
-                {
-                    m_greenSprites[int(Tank::EOrientation::Right)]->render(m_position, m_size, m_rotation, m_layer,
-                        m_spriteAnimator_right.getCurrentFrame());
-                }
-                else
-                {
-                    m_pSprite_right->render(m_position, m_size, m_rotation, m_layer, m_spriteAnimator_right.getCurrentFrame());
-                }
-                break;
+                m_greenSprites.at(int(Tank::EOrientation::Top))->render(m_position, m_size, m_rotation, m_layer,
+                    m_spriteAnimator_top.getCurrentFrame());
             }
-            
-        }
-        catch (...)
-        {
-            std::cerr << "Something Wrong!\n";
+
+            else
+            {
+                m_pSprite_top->render(m_position, m_size, m_rotation, m_layer, m_spriteAnimator_top.getCurrentFrame());
+            }
+            break;
+        case Tank::EOrientation::Bottom:
+            if (m_isBonusTank && m_redColor)
+            {
+                //m_changeColorTimer.start(m_timeBetweenChangingColor);
+                //m_changeColorToRed = false;
+                m_redSprites.at(int(Tank::EOrientation::Bottom))->render(m_position, m_size, m_rotation, m_layer,
+                    m_spriteAnimator_bottom.getCurrentFrame());
+            }
+            else if (m_greenColor)
+            {
+                m_greenSprites[int(Tank::EOrientation::Bottom)]->render(m_position, m_size, m_rotation, m_layer,
+                    m_spriteAnimator_bottom.getCurrentFrame());
+            }
+            else
+            {
+                m_pSprite_bottom->render(m_position, m_size, m_rotation, m_layer, m_spriteAnimator_bottom.getCurrentFrame());
+            }
+            break;
+        case Tank::EOrientation::Left:
+            if (m_isBonusTank && m_redColor)
+            {
+                //m_changeColorTimer.start(m_timeBetweenChangingColor);
+                //m_changeColorToRed = false;
+                m_redSprites.at(int(Tank::EOrientation::Left))->render(m_position, m_size, m_rotation, m_layer,
+                    m_spriteAnimator_left.getCurrentFrame());
+            }
+            else if (m_greenColor)
+            {
+                m_greenSprites[int(Tank::EOrientation::Left)]->render(m_position, m_size, m_rotation, m_layer,
+                    m_spriteAnimator_left.getCurrentFrame());
+            }
+            else
+            {
+                m_pSprite_left->render(m_position, m_size, m_rotation, m_layer, m_spriteAnimator_left.getCurrentFrame());
+            }
+            break;
+        case Tank::EOrientation::Right:
+            if (m_isBonusTank && m_redColor)
+            {
+                //m_changeColorTimer.start(m_timeBetweenChangingColor);
+                //m_changeColorToRed = false;
+                m_redSprites.at(int(Tank::EOrientation::Right))->render(m_position, m_size, m_rotation, m_layer,
+                    m_spriteAnimator_right.getCurrentFrame());
+            }
+            else if (m_greenColor)
+            {
+                m_greenSprites[int(Tank::EOrientation::Right)]->render(m_position, m_size, m_rotation, m_layer,
+                    m_spriteAnimator_right.getCurrentFrame());
+            }
+            else
+            {
+                m_pSprite_right->render(m_position, m_size, m_rotation, m_layer, m_spriteAnimator_right.getCurrentFrame());
+            }
+            break;
         }
 
         if (m_hasShield)
@@ -399,13 +408,20 @@ void Tank::update(const double delta)
 {
     bool isFreeze = m_pLevel->isFreeze();
 
-    m_iceDriceTimer.update(delta);
+    if (isFreeze && m_isEnemyTank)
+    {
+        m_velocity = 0;
+    }
+    m_shieldTimer.update(delta);
+    m_iceDriveTimer.update(delta);
 
     m_twiceShootTimer.update(delta);
 
     m_changeColorTimer.update(delta);
 
-    if ((m_position.x<0 || m_position.x > m_pLevel->getWindowSizeInPixels().x || m_position.y<0 || m_position.y > m_pLevel->getWindowSizeInPixels().y) && !m_isDestroyed && m_isActive)
+    glm::ivec2 windowSize = m_pLevel->getWindowSizeInPixels();
+
+    if ((m_position.x<0 || m_position.x > windowSize.x || m_position.y<0 || m_position.y > windowSize.y) && !m_isDestroyed && m_isActive)
     {
         std::cout << "Tank out of bounds level. Call Tank::destroy()\n";
         m_isBonusTank = false;
@@ -417,8 +433,9 @@ void Tank::update(const double delta)
         m_pCurrentBullet1->update(delta);
         if (m_pCurrentBullet1->getCurrentVelocity() != 0)
         {
-            if (m_pCurrentBullet1->getCurrentPosition().y < 0 || m_pCurrentBullet1->getCurrentPosition().y > m_pLevel->getWindowSizeInPixels().y
-                || m_pCurrentBullet1->getCurrentPosition().x < 0 || m_pCurrentBullet1->getCurrentPosition().x > m_pLevel->getWindowSizeInPixels().x + 10 && !m_pCurrentBullet1->isExplosioning())
+            glm::vec2 positionBullet = m_pCurrentBullet1->getCurrentPosition();
+            if (positionBullet.y < 0 || positionBullet.y > windowSize.y
+                || positionBullet.x < 0 || positionBullet.x > windowSize.x + 10 && !m_pCurrentBullet1->isExplosioning())
             {
                 std::cout << "Bullet out of bounds level. Call Bullet::onCOllisionCallback()\n";
                 m_pCurrentBullet1->getColliders()[0].onCollisionCallback(*m_pCurrentBullet1.get(), Physics::ECollisionDirection::Bottom);
@@ -435,8 +452,9 @@ void Tank::update(const double delta)
         m_pCurrentBullet2->update(delta);
         if (m_pCurrentBullet2->getCurrentVelocity() != 0)
         {
-            if (m_pCurrentBullet2->getCurrentPosition().y < 0 || m_pCurrentBullet2->getCurrentPosition().y > m_pLevel->getWindowSizeInPixels().y
-                || m_pCurrentBullet2->getCurrentPosition().x < 0 || m_pCurrentBullet2->getCurrentPosition().x > m_pLevel->getWindowSizeInPixels().x + 10 && !m_pCurrentBullet2->isExplosioning())
+            glm::vec2 positionBullet = m_pCurrentBullet2->getCurrentPosition();
+            if (positionBullet.y < 0 || positionBullet.y > windowSize.y
+                || positionBullet.x < 0 || positionBullet.x >windowSize.x + 10 && !m_pCurrentBullet2->isExplosioning())
             {
                 std::cout << "Bullet out of bounds level. Call Bullet::onCOllisionCallback()\n";
                 m_pCurrentBullet2->getColliders()[0].onCollisionCallback(*m_pCurrentBullet2.get(), Physics::ECollisionDirection::Bottom);
@@ -467,13 +485,12 @@ void Tank::update(const double delta)
         if (m_pAIComponent && !isFreeze)
         {
             m_pAIComponent->update(delta);
-            //setVelocity(0);
         }
 
         if (m_hasShield)
         {
             m_spriteAnimator_shield.update(delta);
-            m_shieldTimer.update(delta);
+            
         }
 
         if (m_velocity > 0 && ((!m_isEnemyTank) || (m_isEnemyTank && !isFreeze)))
@@ -540,8 +557,8 @@ void Tank::onCollision(IGameObject& object)
 {
     if (object.getObjectType() == IGameObject::EObjectType::Bullet )
     {
+        
         object.getColliders()[0].onCollisionCallback(*this, Physics::ECollisionDirection::Bottom);
-
 
 
         Tank* tankOwner = dynamic_cast<Tank*>(object.getOwner());
@@ -550,15 +567,18 @@ void Tank::onCollision(IGameObject& object)
         if (!tankOwner->m_isEnemyTank && !this->m_isEnemyTank)
             return;
 
+        
+
         if (!m_isSpawning && !m_hasShield)
         {
             if (m_isEnemyTank)
             {
                 reduceCountLifes();
-                if (m_lifes == 1)
+                if (m_lifes == 1 && !m_changeColorToRed )
                 {
                     m_changeColorToGreen = false;
                     m_changeColorTimer.stop();
+                    m_greenColor = false;
                 }
                     
 
@@ -582,7 +602,6 @@ void Tank::destroy()
     m_isActive = false;
     m_isDestroyed = true;
     m_explosionTimer.start(m_spriteAnimator_bigExplosionLeftBottom.getTotalDuration());
-    //if (m_lifes > 1 && !m_isEnemyTank && m_type != )
     m_pGameManager->playSound(AudioManager::EAudioType::Explosion);
     if (m_isBonusTank)
     {
@@ -601,7 +620,7 @@ void Tank::respawn()
 void Tank::activateShield(double duration)
 {
     m_hasShield = true;
-    m_shieldTimer.update(duration);
+    m_shieldTimer.start(duration);
 }
 
 void Tank::levelUp()
@@ -635,6 +654,42 @@ void Tank::levelUp()
         m_type = Tank::ETankType::Player2Green_type4;
         break;
     case Tank::ETankType::Player2Green_type4:
+        break;
+    }
+}
+
+
+void Tank::levelDown()
+{
+    switch (m_type)
+    {
+    case Tank::ETankType::Player1Yellow_type1:
+        break;
+    case Tank::ETankType::Player1Yellow_type2:
+        setTankType(Tank::ETankType::Player1Yellow_type1);
+        m_type = Tank::ETankType::Player1Yellow_type1;
+        break;
+    case Tank::ETankType::Player1Yellow_type3:
+        setTankType(Tank::ETankType::Player1Yellow_type2);
+        m_type = Tank::ETankType::Player1Yellow_type2;
+        break;
+    case Tank::ETankType::Player1Yellow_type4:
+        setTankType(Tank::ETankType::Player1Yellow_type3);
+        m_type = Tank::ETankType::Player1Yellow_type3;
+        break;
+    case Tank::ETankType::Player2Green_type1:
+        break;
+    case Tank::ETankType::Player2Green_type2:
+        setTankType(Tank::ETankType::Player2Green_type1);
+        m_type = Tank::ETankType::Player2Green_type1;
+        break;
+    case Tank::ETankType::Player2Green_type3:
+        setTankType(Tank::ETankType::Player2Green_type2);
+        m_type = Tank::ETankType::Player2Green_type2;
+        break;
+    case Tank::ETankType::Player2Green_type4:
+        setTankType(Tank::ETankType::Player2Green_type3);
+        m_type = Tank::ETankType::Player2Green_type3;
         break;
     }
 }
@@ -745,5 +800,4 @@ void Tank::setTankType(Tank::ETankType type)
 void Tank::reduceCountLifes()
 {
     m_lifes--; 
-    //std::cout << "Reduce lifes plyer = " << m_lifes << std::endl;
 }

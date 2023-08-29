@@ -25,7 +25,7 @@ namespace Resources
 
 	std::string ResourceManager::m_path;
 
-	descriptionLevel::descriptionLevel(std::vector<std::string> _ms,std::unordered_map<Tank::ETankType, int> _etm)
+	descriptionLevel::descriptionLevel(std::vector<std::string> _ms, std::vector<std::pair<Tank::ETankType, int>> _etm)
 	{
 		mapStructure = std::move(_ms);
 		enemiesTypeMaps = std::move(_etm) ;
@@ -379,28 +379,28 @@ namespace Resources
 				}
 
 				const auto enemies = currentLevel["enemies"].GetArray();
-				std::unordered_map<Tank::ETankType, int> mapTanksType;
+				std::vector<std::pair<Tank::ETankType, int>> mapTanksType;
 				for (const auto& currentType : enemies)
 				{
 					if (currentType.FindMember("type1") != currentType.MemberEnd())
 					{
 						const int count = currentType["type1"].GetInt();
-						mapTanksType.emplace( Tank::ETankType::EnemyWhite_type1, count);
+						mapTanksType.emplace_back( Tank::ETankType::EnemyWhite_type1, count);
 					}
 					else if (currentType.FindMember("type2") != currentType.MemberEnd())
 					{
 						const int count = currentType["type2"].GetInt();
-						mapTanksType.emplace( Tank::ETankType::EnemyWhite_type2, count);
+						mapTanksType.emplace_back( Tank::ETankType::EnemyWhite_type2, count);
 					}
 					else if (currentType.FindMember("type3") != currentType.MemberEnd())
 					{
 						const int count = currentType["type3"].GetInt();
-						mapTanksType.emplace( Tank::ETankType::EnemyWhite_type3, count);
+						mapTanksType.emplace_back( Tank::ETankType::EnemyWhite_type3, count);
 					}
 					else
 					{
 						const int count = currentType["type4"].GetInt();
-						mapTanksType.emplace( Tank::ETankType::EnemyWhite_type4, count);
+						mapTanksType.emplace_back( Tank::ETankType::EnemyWhite_type4, count);
 					}
 				}
 				auto res = descriptionLevel(std::move(levelRows), std::move(mapTanksType));

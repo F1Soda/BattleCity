@@ -42,8 +42,8 @@ private:
 	double m_timeBetweenFlashing = 500;
 	double m_durationExistion = 10000;
 	double m_durationShield = 10000;
-	double m_durationFreeze = 5000;
-	double m_durationExistingBetonFord = 10000;
+	double m_durationFreeze = 10000;
+	double m_durationExistingBetonFord = 15000;
 
 	bool m_renderBonus;
 

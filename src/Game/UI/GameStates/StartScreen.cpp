@@ -18,7 +18,7 @@ StartScreen::StartScreen(const std::vector<std::string>& startScreenDescription,
     , m_currentMenuSelection(0)
     , m_keyReleased(true)
     , m_menuSprite(std::make_pair(Resources::ResourceManager::getSprite("menu"), glm::vec2(11 * BLOCK_SIZE, STARTSCREEN_HEIGHT - startScreenDescription.size() * BLOCK_SIZE - MENU_HEIGHT - 5 * BLOCK_SIZE)))
-    , m_tankSprite(std::make_pair(Resources::ResourceManager::getSprite("player1_yellow_tank_type1_sprite_right"), glm::vec2(8 * BLOCK_SIZE, m_menuSprite.second.y + 6 * BLOCK_SIZE - m_currentMenuSelection * 2 * BLOCK_SIZE)))
+    , m_tankSprite(std::make_pair(Resources::ResourceManager::getSprite("player1_yellow_tank_type1_sprite_right"), glm::vec2(8 * BLOCK_SIZE, m_menuSprite.second.y + 3 * BLOCK_SIZE - m_currentMenuSelection * 2 * BLOCK_SIZE)))
     , m_tankSpriteAnimator(m_tankSprite.first)
     , m_pGameManager(m_pGame->getGameManager())
 {
@@ -133,14 +133,14 @@ void StartScreen::processInput(std::array<char, 349>& keys)
             m_keyReleased = false;
             --m_currentMenuSelection;
             if (m_currentMenuSelection < 0)
-                m_currentMenuSelection = 2;
+                m_currentMenuSelection = 1;
             m_pGameManager->playSound(AudioManager::EAudioType::NavigateInMenu);
         }
         else if (keys[GLFW_KEY_S])
         {
             m_keyReleased = false;
             ++m_currentMenuSelection;
-            if (m_currentMenuSelection > 2)
+            if (m_currentMenuSelection > 1)
                 m_currentMenuSelection = 0;
             m_pGameManager->playSound(AudioManager::EAudioType::NavigateInMenu);
         }
@@ -159,11 +159,11 @@ void StartScreen::processInput(std::array<char, 349>& keys)
         {
         case 0:
             m_pGameManager->playSound(AudioManager::EAudioType::SelectInMenu);
-            m_pGame->startNewLevel(0, Game::EGameMode::OnePlayer);
+            m_pGameManager->setSelectStageScreen(0);
             break;
         case 1:
             m_pGameManager->playSound(AudioManager::EAudioType::SelectInMenu);
-            m_pGame->startNewLevel(0, Game::EGameMode::TwoPlayer, Tank::ETankType::Player1Yellow_type1, Tank::ETankType::Player2Green_type1);
+            m_pGameManager->setSelectStageScreen(1);
             break;
         default:
             break;

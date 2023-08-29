@@ -29,7 +29,7 @@ Tank::EOrientation Level::eMoveStateFirstButtonSecondPlayer = Tank::EOrientation
 static bool button_P_Esc_released = false;
 static bool buttonInMenureleased = false;
 static const bool playerWithAIComponent = false;
-static const int maxCountTanksOnLevel = 4;
+static bool respawnEnemy = true;
 
 std::shared_ptr<IGameObject> Level::createGameObjectFromDiscription(const char description, const glm::vec2& position, const glm::vec2& size, const float rotation)
 {
@@ -66,13 +66,13 @@ std::shared_ptr<IGameObject> Level::createGameObjectFromDiscription(const char d
 		return std::make_shared<BetonWall>(BetonWall::EBetonWallType::Top, position, size, rotation, 0.0f);
 	case '9':
 		return std::make_shared<BetonWall>(BetonWall::EBetonWallType::All, position, size, rotation, 0.0f);
-	case 'K':
+	case 'P':
 		return std::make_shared<BetonWall>(BetonWall::EBetonWallType::BottomLeft, position, size, rotation, 0.0f);
-	case 'L':
+	case 'Q':
 		return std::make_shared<BetonWall>(BetonWall::EBetonWallType::BottomRight, position, size, rotation, 0.0f);
-	case 'M':
+	case 'R':
 		return std::make_shared<BetonWall>(BetonWall::EBetonWallType::TopRight, position, size, rotation, 0.0f);
-	case 'N':
+	case 'S':
 		return std::make_shared<BetonWall>(BetonWall::EBetonWallType::TopLeft, position, size, rotation, 0.0f);
 	case 'A':
 
@@ -95,10 +95,10 @@ std::shared_ptr<IGameObject> Level::createGameObjectFromDiscription(const char d
 }
 
 
-Level::Level(const std::vector<std::string>& levelDescription, std::unordered_map<Tank::ETankType, int> enemiesTypeMap, const Game::EGameMode eGameMode, GameManager* pGameManager
+Level::Level(const std::vector<std::string>& levelDescription, std::vector<std::pair<Tank::ETankType, int>> enemiesType, const Game::EGameMode eGameMode, GameManager* pGameManager
 	, Tank::ETankType primalTypeTank1, Tank::ETankType primalTypeTank2, int beginingLifeTank1, int beginingLifeTank2)
 	: m_eGameMode(eGameMode)
-	, m_enemiesTankTypeMap(enemiesTypeMap)
+	, m_enemiesTankType(enemiesType)
 	, m_currentCountPlayersTanks(3)
 	, m_currentCountEnemyTanksOnLevel(0)
 	, isDestroed(false)
@@ -109,7 +109,16 @@ Level::Level(const std::vector<std::string>& levelDescription, std::unordered_ma
 	, m_isCreatedBettonFort(false)
 	, m_primalLifesFirstTank(beginingLifeTank1)
 	, m_primalLifesSecondTank(beginingLifeTank2)
+	, m_canSpawnEnemyTanks(true)
 {
+	if (eGameMode == Game::EGameMode::TwoPlayer)
+	{
+		m_maxCountTanksOnLevel = 6;
+	}
+	else
+	{
+		m_maxCountTanksOnLevel = 4;
+	}
 	m_pGameManager = pGameManager;
 
 	if (levelDescription.empty())
@@ -214,6 +223,10 @@ Level::Level(const std::vector<std::string>& levelDescription, std::unordered_ma
 		//m_levelObjects.erase(m_levelObjects.end() - m_betonWallFort.size(), m_levelObjects.end());
 		m_betonWallFort.clear();
 	});
+
+	m_spawningEnemyTimer.setCallback([&]() {m_canSpawnEnemyTanks = true; });
+	m_pGameManager->playSound(AudioManager::EAudioType::GameStart);
+
 }
 
 void Level::render() const
@@ -271,6 +284,7 @@ void Level::update(const double delta)
 
 	m_freezeTimer.update(delta);
 	m_betonFortTimer.update(delta);
+	m_spawningEnemyTimer.update(delta);
 
 	for (int i = 0; i < m_bonuses.size(); i++)
 	{
@@ -315,7 +329,7 @@ void Level::update(const double delta)
 	m_enemySpawner_3->update(delta);
 		
 	int debCountEnemy = getCountEnemyTank();
-	if (m_currentCountEnemyTanksOnLevel < maxCountTanksOnLevel && getCountEnemyTank() >0)
+	if (m_currentCountEnemyTanksOnLevel < m_maxCountTanksOnLevel && getCountEnemyTank() >0 && respawnEnemy)
 	{
 		respawnEnemyTank();
 	}
@@ -372,11 +386,6 @@ std::vector<std::shared_ptr<IGameObject>> Level::getObjectsInArea(const glm::vec
 		output.push_back(m_levelObjects[m_levelObjects.size() - 3]);
 	if (endY >= m_heightBlocks)
 		output.push_back(m_levelObjects[m_levelObjects.size() - 4]);
-
-
-	
-	//std::cout << "output.size: " << output.size() << std::endl;
-
 	return output;
 }
 
@@ -414,12 +423,15 @@ void Level::processInput(std::array<char, 349>& keys)
 			if (keys[GLFW_KEY_W])
 			{
 				m_pUIMenuLevel->upLine();
+
 				buttonInMenureleased = false;
+				m_pGameManager->playSound(AudioManager::EAudioType::NavigateInMenu);
 			}
 			else if (keys[GLFW_KEY_S])
 			{
 				m_pUIMenuLevel->downLine();
 				buttonInMenureleased = false;
+				m_pGameManager->playSound(AudioManager::EAudioType::NavigateInMenu);
 			}
 			else if (keys[GLFW_KEY_ENTER])
 			{
@@ -427,22 +439,28 @@ void Level::processInput(std::array<char, 349>& keys)
 				switch (currentPosLine)
 				{
 				case primitives::Line::ELinePosition::MENU:
+					m_pGameManager->playSound(AudioManager::EAudioType::SelectInMenu);
 					m_pGameManager->setStartScreen();
 					break;
 				case primitives::Line::ELinePosition::RESTART:
 					switch (m_eGameMode)
 					{
 					case Game::EGameMode::OnePlayer:
+						m_pGameManager->playSound(AudioManager::EAudioType::SelectInMenu);
 						m_pGameManager->restart(m_pTank1.get());
 						break;
 					case Game::EGameMode::TwoPlayer:
+						m_pGameManager->playSound(AudioManager::EAudioType::SelectInMenu);
 						m_pGameManager->restart(m_pTank1.get(),m_pTank2.get());
 						break;
 					}
+					
 					//m_pGameManager->restart(m_pTank1->getTankType());
 					break;
 				case primitives::Line::ELinePosition::SOUND:
-					std::cout << "Not implemented yet =)\n";
+					m_pGameManager->setOnOffSound();
+					m_pGameManager->playSound(AudioManager::EAudioType::SelectInMenu);
+					//std::cout << "Not implemented yet =)\n";
 					break;
 				}
 				buttonInMenureleased = false;
@@ -586,12 +604,16 @@ void Level::initLevel()
 	
 	}
 	std::cout << "Enemies:\n";
-	for (auto pair : m_enemiesTankTypeMap)
+	for (auto pair : m_enemiesTankType)
 	{
 		if (pair.first == Tank::ETankType::EnemyWhite_type1)
 			std::cout << "type1, count: " << pair.second << std::endl;
 		else if (pair.first == Tank::ETankType::EnemyWhite_type2)
 			std::cout << "type2, count: " << pair.second << std::endl;
+		else if (pair.first == Tank::ETankType::EnemyWhite_type3)
+			std::cout << "type3, count: " << pair.second << std::endl;
+		else if (pair.first == Tank::ETankType::EnemyWhite_type4)
+			std::cout << "type4, count: " << pair.second << std::endl;
 	}
 
 }
@@ -612,7 +634,7 @@ void Level::changeLevelObject(unsigned int indexToCahnge, std::shared_ptr<IGameO
 	m_levelObjects[indexToCahnge] = newObject;
 }
 
-void Level::addEnemyTank(Tank::ETankType tankType)
+void Level::addEnemyTank(int index)
 {
 	using Random = effolkronium::random_static;
 
@@ -623,16 +645,18 @@ void Level::addEnemyTank(Tank::ETankType tankType)
 	if (!freedomSpawners.empty())
 	{
 		int randInd = Random::get<int>(0, int(freedomSpawners.size()-1));
-		auto enemyTank = freedomSpawners[randInd]->spawn(tankType, true, 0);
+		auto enemyTank = freedomSpawners[randInd]->spawn(m_enemiesTankType[index].first, true, 0); // randInd
 		m_enemyTanks.emplace_back(enemyTank);
 		Physics::PhysicsEngine::addDynamicGameObject(enemyTank);
-		m_enemiesTankTypeMap[tankType]--;
+		m_enemiesTankType[index].second--;
 		m_currentCountEnemyTanksOnLevel++;
 	}
 }
 
 void Level::destroyEnemyTank(Tank* pTankToDelete)
 {
+	static int count;
+	count++;
 	std::cout << "Player lifes = " << m_pTank1->getCountLeftLifes() << std::endl;
 	for (auto it = m_enemyTanks.begin(); it != m_enemyTanks.end(); it++ )
 	{
@@ -644,9 +668,19 @@ void Level::destroyEnemyTank(Tank* pTankToDelete)
 			std::cout << "Desortoyed enemy tank. Count of enemies tank: " << getCountEnemyTank() << std::endl;
 			Physics::PhysicsEngine::nullifyDyanmicObject((*it).get());
 			m_currentCountEnemyTanksOnLevel--;
+			std::cout << "Count tanks on level " << m_currentCountEnemyTanksOnLevel << std::endl;
+			std::cout << "var m_isGameOver = " << m_pGameManager->m_isGameOver << std::endl;
 			*it = nullptr;
-			auto debug = m_enemiesTankTypeMap[pTankToDelete->getTankType()];
-			
+			//auto debug = m_enemiesTankType[pTankToDelete->getTankType()];
+			/*if (getCountEnemyTank() < 0)
+			{
+				std::cerr << "ERROR: getCountEnemyTank() return negative number\n";
+			}
+			if (m_currentCountEnemyTanksOnLevel < 0)
+			{
+				std::cerr << "ERROR: m_currentCountEnemyTanksOnLevel is a negative number\n";
+			}*/
+
 			if (getCountEnemyTank() == 0 && m_currentCountEnemyTanksOnLevel == 0 && !m_pGameManager->m_isGameOver)
 			{
 				m_pGameManager->playSound(AudioManager::EAudioType::Win);
@@ -654,6 +688,8 @@ void Level::destroyEnemyTank(Tank* pTankToDelete)
 				m_endingLevelTimer.start(2000);
 				std::cout << "YOU WIN!\n";
 			}
+			
+
 			else if (getCountEnemyTank() > 0)
 			{
 				respawnEnemyTank();
@@ -695,29 +731,20 @@ void Level::destroyPlayerTank(Tank* pTank)
 	{
 		if (m_eGameMode == Game::EGameMode::OnePlayer)
 		{
-			if (pTank->getTankType() != Tank::ETankType::Player1Yellow_type1)
-			{
-				pTank->setTankType(Tank::ETankType::Player1Yellow_type1);
-			}
-
+			
+			pTank->levelDown();
 			m_playerSpawner_1->respawn(*pTank);
 		}
 		else
 		{
 			if (m_pTank1.get() == pTank)
 			{
-				if (pTank->getTankType() != Tank::ETankType::Player1Yellow_type1)
-				{
-					pTank->setTankType(Tank::ETankType::Player1Yellow_type1);
-				}
+				pTank->levelDown();
 				m_playerSpawner_1->respawn(*pTank);
 			}
 			else
 			{
-				if (pTank->getTankType() != Tank::ETankType::Player2Green_type1)
-				{
-					pTank->setTankType(Tank::ETankType::Player2Green_type1);
-				}
+				pTank->levelDown();
 				m_playerSpawner_2->respawn(*pTank);
 			}
 		}
@@ -737,11 +764,10 @@ void Level::destroyPlayerTank(Tank* pTank)
 	}*/
 }
 
-
 int Level::getCountEnemyTank()
 {
 	int res = 0;
-	for (auto a : m_enemiesTankTypeMap)
+	for (auto a : m_enemiesTankType)
 	{
 		res += a.second;
 	}
@@ -750,22 +776,17 @@ int Level::getCountEnemyTank()
 
 void Level::respawnEnemyTank()
 {
-	auto it = m_enemiesTankTypeMap.find(Tank::ETankType::EnemyWhite_type1);
-	if (it != m_enemiesTankTypeMap.end() && it->second != 0)
+	if (!m_canSpawnEnemyTanks) return;
+	m_canSpawnEnemyTanks = false;
+	m_spawningEnemyTimer.start(m_durationBetweenSpawning);
+
+	for (int i = 0; i < m_enemiesTankType.size(); i++)
 	{
-		addEnemyTank(Tank::ETankType::EnemyWhite_type1);
-	}
-	else if ((it = m_enemiesTankTypeMap.find(Tank::ETankType::EnemyWhite_type2)) != m_enemiesTankTypeMap.end() && it->second != 0)
-	{
-		addEnemyTank(Tank::ETankType::EnemyWhite_type2);
-	}
-	else if ((it = m_enemiesTankTypeMap.find(Tank::ETankType::EnemyWhite_type3)) != m_enemiesTankTypeMap.end() && it->second != 0)
-	{
-		addEnemyTank(Tank::ETankType::EnemyWhite_type3);
-	}
-	else if ((it = m_enemiesTankTypeMap.find(Tank::ETankType::EnemyWhite_type4)) != m_enemiesTankTypeMap.end() && it->second != 0)
-	{
-		addEnemyTank(Tank::ETankType::EnemyWhite_type4);
+		if (m_enemiesTankType[i].second != 0)
+		{
+			addEnemyTank(i);
+			break;
+		}
 	}
 }
 
@@ -778,6 +799,7 @@ void Level::nextLevel()
 		break;
 	case Game::EGameMode::OnePlayer:
 		m_pGameManager->nextLevel(m_pTank1.get());
+		//m_pGameManager->nextLevel(m_pTank1.get());
 		break;
 	}
 	
@@ -796,17 +818,6 @@ Bonus* Level::createBonus()
 	using Random = effolkronium::random_static;
 	auto randType = Bonus::ETypeBonus(Random::get<int>(0, countBonuses - 1)); 
 	auto randPos = glm::vec2(Random::get<int>(0, m_widthPixels - 28), Random::get<int>(Level::BLOCK_SIZE / 2, m_heightPixels - 28));
-	//randPos = m_pTank1->getTargetPosition();
-	//while (true)
-	//{
-	//	/if (randPos.x > m_pTank1->getCurrentPosition().x + m_pTank1->getSize().x)
-	//	{
-	//		//break;
-	//	}
-	//	//if (randPos.x > m_pTank1->getCurrentPosition().x + m_pTank1->getSize().x)
-	//}
-	
-	
 	auto res = m_bonuses.emplace_back(std::make_shared<Bonus>(randType, randPos, 1.1f, m_pGameManager));
 	Physics::PhysicsEngine::addDynamicGameObject(res);
 	return res.get();
@@ -840,13 +851,6 @@ void Level::freeze(double duration)
 
 void Level::destroyAllEnemyTanks()
 {
-
-	//auto it = m_enemyTanks.begin();
-	//while (it != m_enemyTanks.end())
-	//{
-	//	//it = m_enemyTanks.erase(it);
-	//}
-
 	for (std::shared_ptr<Tank> currentTank : m_enemyTanks)
 	{
 		if (!currentTank->isDestroyed() && !currentTank->isSpawning())
@@ -862,36 +866,23 @@ void Level::buildFort(double duration)
 	m_betonWallFort.reserve(5);
 
 	int index;
-
-	//Physics::PhysicsEngine::addDynamicObjectInNextFrame(m_betonWallFort.emplace_back(createGameObjectFromDiscription('5', m_posEagle - glm::vec2(BLOCK_SIZE, 0), glm::vec2(BLOCK_SIZE), 0.f)));
-	//Physics::PhysicsEngine::addDynamicObjectInNextFrame(m_betonWallFort.emplace_back(createGameObjectFromDiscription('L', glm::vec2(m_posEagle.x - BLOCK_SIZE, m_posEagle.y + BLOCK_SIZE), glm::vec2(BLOCK_SIZE), 0.f)));
-	//Physics::PhysicsEngine::addDynamicObjectInNextFrame(m_betonWallFort.emplace_back(createGameObjectFromDiscription('6', m_posEagle + glm::vec2(0, BLOCK_SIZE), glm::vec2(BLOCK_SIZE), 0.f)));
-	//Physics::PhysicsEngine::addDynamicObjectInNextFrame(m_betonWallFort.emplace_back(createGameObjectFromDiscription('K', m_posEagle + glm::vec2(BLOCK_SIZE), glm::vec2(BLOCK_SIZE), 0.f)));
-	//Physics::PhysicsEngine::addDynamicObjectInNextFrame(m_betonWallFort.emplace_back(createGameObjectFromDiscription('7', m_posEagle + glm::vec2(BLOCK_SIZE, 0), glm::vec2(BLOCK_SIZE), 0.f)));
 	index = Physics::PhysicsEngine::getObjectIndexByPos((m_betonWallFort.emplace_back(createGameObjectFromDiscription('5', m_posEagle - glm::vec2(BLOCK_SIZE, 0), glm::vec2(BLOCK_SIZE), 0.f))->getCurrentPosition()));
 	changeLevelObject(index, m_betonWallFort.back());
 
-	index = Physics::PhysicsEngine::getObjectIndexByPos((m_betonWallFort.emplace_back(createGameObjectFromDiscription('L', glm::vec2(m_posEagle.x - BLOCK_SIZE, m_posEagle.y + BLOCK_SIZE), glm::vec2(BLOCK_SIZE), 0.f))->getCurrentPosition()));
+	index = Physics::PhysicsEngine::getObjectIndexByPos((m_betonWallFort.emplace_back(createGameObjectFromDiscription('Q', glm::vec2(m_posEagle.x - BLOCK_SIZE, m_posEagle.y + BLOCK_SIZE), glm::vec2(BLOCK_SIZE), 0.f))->getCurrentPosition()));
 	changeLevelObject(index, m_betonWallFort.back());
 
 	index = Physics::PhysicsEngine::getObjectIndexByPos((m_betonWallFort.emplace_back(createGameObjectFromDiscription('6', m_posEagle + glm::vec2(0, BLOCK_SIZE), glm::vec2(BLOCK_SIZE), 0.f))->getCurrentPosition()));
 	changeLevelObject(index, m_betonWallFort.back());
 
-	index = Physics::PhysicsEngine::getObjectIndexByPos((m_betonWallFort.emplace_back(createGameObjectFromDiscription('K', m_posEagle + glm::vec2(BLOCK_SIZE), glm::vec2(BLOCK_SIZE), 0.f))->getCurrentPosition()));
+	index = Physics::PhysicsEngine::getObjectIndexByPos((m_betonWallFort.emplace_back(createGameObjectFromDiscription('P', m_posEagle + glm::vec2(BLOCK_SIZE), glm::vec2(BLOCK_SIZE), 0.f))->getCurrentPosition()));
 	changeLevelObject(index, m_betonWallFort.back());
 
 	index = Physics::PhysicsEngine::getObjectIndexByPos((m_betonWallFort.emplace_back(createGameObjectFromDiscription('7', m_posEagle + glm::vec2(BLOCK_SIZE, 0), glm::vec2(BLOCK_SIZE), 0.f))->getCurrentPosition()));
 	changeLevelObject(index, m_betonWallFort.back());
 
-	
-
 	m_isCreatedBettonFort = true;
 	m_betonFortTimer.start(duration);
-	//m_levelObjects.insert(m_levelObjects.end(), m_betonWallFort.begin(), m_betonWallFort.end());
 
 }
-
-//glm::vec2 positionTank = m_pParentTank->getCurrentPosition();
-//glm::vec2 windowScaleInPixels = m_pLevel->getWindowSizeInPixels();
-//glm::ivec2 correctedPositionTank = glm::vec2(std::clamp(std::round(positionTank.x - BLOCK_SIZE), 0.f, static_cast<float>(windowScaleInPixels.x)), std::clamp(std::round(windowScaleInPixels.y - positionTank.y) + BLOCK_SIZE / 2, 0.f, static_cast<float>(windowScaleInPixels.y)));
 

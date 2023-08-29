@@ -16,10 +16,10 @@ namespace Resources
 {
 	struct descriptionLevel
 	{
-		descriptionLevel(std::vector<std::string>, std::unordered_map<Tank::ETankType, int>);
+		descriptionLevel(std::vector<std::string>, std::vector<std::pair<Tank::ETankType, int>>);
 
 		std::vector<std::string> mapStructure;
-		std::unordered_map<Tank::ETankType, int> enemiesTypeMaps;
+		std::vector<std::pair<Tank::ETankType, int>> enemiesTypeMaps;
 	};
 
 	class ResourceManager

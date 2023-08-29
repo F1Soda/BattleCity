@@ -20,6 +20,9 @@ public:
 
 	static constexpr unsigned int BLOCK_SIZE = 8;
 
+	const unsigned int WIDTH_GAME_OVER_IN_BLOCKS = 8;
+	const unsigned int HEIGHT_GAME_OVER_IN_BLOCKS = 10;
+
 	GameOver(const std::vector<std::string>& gameOverDescription, Game* pGame, glm::vec2 scaleWindow);
 
 	virtual void render() const override;

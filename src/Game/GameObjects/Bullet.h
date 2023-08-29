@@ -38,6 +38,7 @@ public:
 	void onCollision(IGameObject& object) override;
 	bool canDestroyBetton() const { return m_canDestroyBetton; }
 	void setCanDestroyBetton(bool var) { m_canDestroyBetton = var; }
+	void destroy();
 private:
 
 	void onCollisionCallback(const IGameObject& object, const Physics::ECollisionDirection direction);

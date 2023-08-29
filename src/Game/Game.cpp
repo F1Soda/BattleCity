@@ -15,7 +15,8 @@
 #include "Components/AIComponent.h"
 #include "GameManager.h"
 #include "UI/GameStates/GameOver.h"
-
+#include "UI/GameStates/End.h"
+#include "UI/GameStates/selectStage.h"
 
 bool Game::lighting = true;
 
@@ -71,7 +72,7 @@ void Game::update(GLFWwindow* pWindow,const double delta)
         std::cout << "Turn " << (Game::lighting ? "on " : "off") << " lighting" << std::endl;
     }
         
-
+    
 }
 void Game::setKey(const int key, const int action)
 {
@@ -90,15 +91,15 @@ bool Game::init()
     }
     m_pSpriteShaderProgram->use();
     m_pSpriteShaderProgram->setInt("tex", 0);
-    //startNewLevel(0, Game::EGameMode::TwoPlayer, Tank::ETankType::Player1Yellow_type1, Tank::ETankType::Player2Green_type1); //Tank::ETankType::Player1Yellow_type4);
+    //startNewLevel(7, Game::EGameMode::OnePlayer, Tank::ETankType::Player1Yellow_type1); //Tank::ETankType::Player1Yellow_type4);
     setStartScreen(); 
     //gameOver(glm::vec2(m_pCurrentGameState->getStateWidth(), m_pCurrentGameState->getStateHeight()));//glm::vec2(Level::BLOCK_SIZE*13, Level::BLOCK_SIZE * 14));
+   // end(m_windowSize);
     setWindowSize(m_windowSize);
-    updateViewport();
-
-    AIComponent::m_eEnemyState = AIComponent::EEnemyState::Сhaotic;
-
-    m_pGameManager->setSoundOff();
+    
+    //AIComponent::m_eEnemyState = AIComponent::EEnemyState::PursueEagle;
+    //setFullWindow();
+    m_pGameManager->setSoundOn();
 
     return true;
 
@@ -115,6 +116,7 @@ unsigned int Game::getCurrentHeight() const
  
 void Game::startNewLevel(const size_t level, const EGameMode eGameMode, Tank::ETankType typeTank1, Tank::ETankType typeTank2 , int beginingLifesTank1, int beginigLifesTank2)
 {
+    std::system("cls");
     m_currentLevelIndex = level;
     m_currentGameMode = eGameMode;
     auto levelDes = (*Resources::ResourceManager::getLevels())[level];
@@ -133,10 +135,18 @@ void Game::setWindowSize(const glm::uvec2 windowSize)
 {
     m_windowSize = windowSize;
     updateViewport();
+    //setFullWindow();
 }
 
 void Game::updateViewport()
 {
+
+    if (m_pGameManager->isEndSceen)
+    {
+        setFullWindow();
+        return;
+    }
+
     const float level_aspect_ratio = static_cast<float>(getCurrentWidth()) /getCurrentHeight();;
 
     unsigned int viewPortWidth = m_windowSize.x;
@@ -165,12 +175,35 @@ void Game::updateViewport()
     m_pUIShaderProgram->setMatrix4("projectionMat", projectionMatrix);
 }
 
+void Game::setFullWindow()
+{
+    unsigned int viewPortWidth = m_windowSize.x;
+    unsigned int viewPortHeight = m_windowSize.y;
+
+    // Показываме OpenGL где мы хотим рисовать. 
+    // Первые два параметра -- кординаты начала полотна, затем ширина и высота
+    RenderEngine::Renderer::setViewport(viewPortWidth, viewPortHeight);
+
+    glm::mat4 projectionMatrix = glm::ortho(0.0f, static_cast<float>(getCurrentWidth()), 0.0f, static_cast<float>(getCurrentHeight()), -100.0f, 100.0f);
+    m_pSpriteShaderProgram->setMatrix4("projectionMat", projectionMatrix);
+    m_pUIShaderProgram->use();
+    m_pUIShaderProgram->setMatrix4("projectionMat", projectionMatrix);
+}
+
+
 void Game::nextLevel(const EGameMode eGameMode, Tank* pTank1, Tank* pTank2)
 {
     m_currentLevelIndex++;
-    m_currentLevelIndex %= m_countLevels;
-    //std::cout << "YOU WIN" << std::endl;
-    startNewLevel(m_currentLevelIndex, eGameMode, pTank1->getTankType(), pTank2 ? pTank2->getTankType() : Tank::ETankType::EnemyGreen_type1, pTank1->getCountLeftLifes(), pTank2? pTank2->getCountLeftLifes() : 3);
+    if (m_currentLevelIndex == m_countLevels)
+    {
+        m_currentLevelIndex %= m_countLevels;
+        end();
+    }
+    else
+    {
+        startNewLevel(m_currentLevelIndex, eGameMode, pTank1->getTankType(), pTank2 ? pTank2->getTankType() : Tank::ETankType::EnemyGreen_type1, pTank1->getCountLeftLifes(), pTank2 ? pTank2->getCountLeftLifes() : 3);
+    }
+
 }
 
 void Game::setStartScreen()
@@ -197,6 +230,31 @@ void Game::restart(Tank* pTank1, Tank* pTank2)
 {
     startNewLevel(m_currentLevelIndex, m_currentGameMode, pTank1->getTankType(), pTank2 ? pTank2->getTankType() : Tank::ETankType::EnemyGreen_type1, pTank1->getCountLeftLifes(), pTank2 ? pTank2->getCountLeftLifes() : 3);
 }
+
+void Game::end(glm::ivec2& scaleScreen)
+{
+    m_pGameManager->isEndSceen = true;
+
+    if (scaleScreen == glm::ivec2(0))
+    {
+        m_pCurrentGameState = std::make_shared<End>(m_pGameManager.get(), glm::vec2(m_pCurrentGameState->getStateWidth(), m_pCurrentGameState->getStateHeight()));
+    }
+    else
+    {
+        m_pCurrentGameState = std::make_shared<End>(m_pGameManager.get(), scaleScreen);
+    }
+
+    
+    setFullWindow();
+}
+
+void Game::selecetStageScreen(Game::EGameMode eGameMode)
+{
+    m_pCurrentGameState = std::make_shared<SelectStage>(m_pGameManager.get(), glm::vec2(m_pCurrentGameState->getStateWidth(), m_pCurrentGameState->getStateHeight()), eGameMode);
+    updateViewport();
+}
+
+
 
 void Game::pauseWhenChangingSizeOrPosionWindow()
 {

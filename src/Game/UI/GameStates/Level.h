@@ -6,6 +6,7 @@
 #include "../../Game.h"
 #include "../../GameObjects/Spawner.h"
 #include "../../../System/Timer.h"
+#include <map>
 
 class IGameObject;
 struct GLFWwindow;
@@ -16,8 +17,8 @@ class Level : public IGameState
 {
 public:
 	static constexpr unsigned int BLOCK_SIZE = 16;
-	static const unsigned int DURATION_RESPAWNING = 1500;
-	Level(const std::vector<std::string>& levelDescription, std::unordered_map<Tank::ETankType, int> enemiesTypeMap, const Game::EGameMode eGameMode, GameManager* pGameManager
+	static const unsigned int DURATION_RESPAWNING = 2000;
+	Level(const std::vector<std::string>& levelDescription, std::vector<std::pair<Tank::ETankType, int>> enemiesType, const Game::EGameMode eGameMode, GameManager* pGameManager
 		  , Tank::ETankType primalTypeTank1, Tank::ETankType, int beginingLifeTank1, int beginingLifeTank2 = 0);
 	virtual void render() const override;
 	virtual void update(const double  delta) override;
@@ -46,11 +47,11 @@ public:
 	friend void CheckButtonStatusSecondPlayer(int key, Tank::EOrientation eCurrentState);
 	std::shared_ptr<IGameObject> createGameObjectFromDiscription(const char description, const glm::vec2& position, const glm::vec2& size, const float rotation);
 
-	static Tank::EOrientation Level::eMoveStateSecondButtonFirstPlayer;
-	static Tank::EOrientation Level::eMoveStateFirstButtonFirstPlayer;
+	static Tank::EOrientation eMoveStateSecondButtonFirstPlayer;
+	static Tank::EOrientation eMoveStateFirstButtonFirstPlayer;
 
-	static Tank::EOrientation Level::eMoveStateSecondButtonSecondPlayer;
-	static Tank::EOrientation Level::eMoveStateFirstButtonSecondPlayer;
+	static Tank::EOrientation eMoveStateSecondButtonSecondPlayer;
+	static Tank::EOrientation eMoveStateFirstButtonSecondPlayer;
 
 	void destroyEnemyTank(Tank* pTankToDelete);
 	void destroyPlayerTank(Tank* pTank);
@@ -66,7 +67,11 @@ public:
 	bool isFreeze()const { return m_isFreeze; }
 	void destroyAllEnemyTanks();
 	void buildFort(double duration);
+
+	glm::vec2 getEaglePos() const { return m_posEagle; }
+
 private:
+	int m_maxCountTanksOnLevel;
 	size_t m_widthBlocks = 0;
 	size_t m_heightBlocks = 0;
 
@@ -74,6 +79,10 @@ private:
 	bool m_isFreeze;
 
 	Timer m_freezeTimer;
+	Timer m_spawningEnemyTimer;
+	double m_durationBetweenSpawning = 2000;
+	bool m_canSpawnEnemyTanks;
+
 
 	Tank::ETankType m_primalTypeTankFirstPlayer;
 	Tank::ETankType m_primalTypeTankSecondPlayer;
@@ -114,9 +123,9 @@ private:
 	bool isDestroed;
 	bool m_isCreatedBettonFort;
 	//                 type,            count 
-	std::unordered_map<Tank::ETankType, int> m_enemiesTankTypeMap;
+	std::vector<std::pair<Tank::ETankType, int>> m_enemiesTankType;
 
-	void addEnemyTank(Tank::ETankType tankType = Tank::ETankType::EnemyWhite_type1);
+	void addEnemyTank(int index);
 	void respawnEnemyTank();
 	void nextLevel();
 	void setStartScreen();

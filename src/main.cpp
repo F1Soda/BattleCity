@@ -153,7 +153,6 @@ void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int height)
     g_windowSize.x = width;
     g_windowSize.y = height;
     g_game->setWindowSize(g_windowSize);
-
 }
 
 // Вызывается при нажатии клавиши

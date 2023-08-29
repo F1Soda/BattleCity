@@ -315,7 +315,7 @@
             "name": "menu_128x64",
             "filePath": "res/textures/menu_128x64.png",
             "subTextureWidth": 128,
-            "subTextureHeight": 64,
+            "subTextureHeight": 40,
             "subTextures": [
                 "menu"
             ]
@@ -328,6 +328,44 @@
             "subTextureHeight": 240,
             "subTextures": [
                 "menuLevel"
+            ]
+        },
+        {
+            "name": "endTexture",
+            "filePath": "res/textures/ThanksBattleCity.png",
+            "subTextureWidth": 800,
+            "subTextureHeight": 1000,
+            "subTextures": [
+                "end"
+            ]
+        },
+
+        {
+            "name": "F1SodaAtlas",
+            "filePath": "res/textures/F1SodaAtlas.png",
+            "subTextureWidth": 500,
+            "subTextureHeight": 500,
+            "subTextures": [
+                "F1SodaType1",
+                "F1SodaType2",
+                "F1SodaType3",
+                "F1SodaType4"
+            ]
+        },
+        {
+            "name": "StageAtlas",
+            "filePath": "res/textures/stagesAtlas.png",
+            "subTextureWidth": 256,
+            "subTextureHeight": 49,
+            "subTextures": [
+                "Stage1",
+                "Stage2",
+                "Stage3",
+                "Stage4",
+                "Stage5",
+                "Stage6",
+                "Stage7",
+                "Stage8"
             ]
         }
 
@@ -565,15 +603,15 @@
             "frames": [
                 {
                     "subTexture": "explosion1",
-                    "duration": 150
+                    "duration": 75
                 },
                 {
                     "subTexture": "explosion2",
-                    "duration": 150
+                    "duration": 75
                 },
                 {
                     "subTexture": "explosion3",
-                    "duration": 150
+                    "duration": 75
                 }
             ]
         },
@@ -699,6 +737,91 @@
             "shader": "spriteShader",
             "initialSubTexture": "menuLevel"
         },
+
+        {
+            "name": "end",
+            "textureAtlas": "endTexture",
+            "shader": "spriteShader",
+            "initialSubTexture": "end"
+        },
+
+        {
+            "name": "F1SodaType1",
+            "textureAtlas": "F1SodaAtlas",
+            "shader": "spriteShader",
+            "initialSubTexture": "F1SodaType1"
+        },
+
+        {
+            "name": "F1SodaType2",
+            "textureAtlas": "F1SodaAtlas",
+            "shader": "spriteShader",
+            "initialSubTexture": "F1SodaType2"
+        },
+
+        {
+            "name": "F1SodaType3",
+            "textureAtlas": "F1SodaAtlas",
+            "shader": "spriteShader",
+            "initialSubTexture": "F1SodaType3"
+        },
+
+        {
+            "name": "F1SodaType4",
+            "textureAtlas": "F1SodaAtlas",
+            "shader": "spriteShader",
+            "initialSubTexture": "F1SodaType4"
+        },
+
+        {
+            "name": "Stage1",
+            "textureAtlas": "StageAtlas",
+            "shader": "spriteShader",
+            "initialSubTexture": "Stage1"
+        },
+        {
+            "name": "Stage2",
+            "textureAtlas": "StageAtlas",
+            "shader": "spriteShader",
+            "initialSubTexture": "Stage2"
+        },
+        {
+            "name": "Stage3",
+            "textureAtlas": "StageAtlas",
+            "shader": "spriteShader",
+            "initialSubTexture": "Stage3"
+        },
+        {
+            "name": "Stage4",
+            "textureAtlas": "StageAtlas",
+            "shader": "spriteShader",
+            "initialSubTexture": "Stage4"
+        },
+        {
+            "name": "Stage5",
+            "textureAtlas": "StageAtlas",
+            "shader": "spriteShader",
+            "initialSubTexture": "Stage5"
+        },
+        {
+            "name": "Stage6",
+            "textureAtlas": "StageAtlas",
+            "shader": "spriteShader",
+            "initialSubTexture": "Stage6"
+        },
+        {
+            "name": "Stage7",
+            "textureAtlas": "StageAtlas",
+            "shader": "spriteShader",
+            "initialSubTexture": "Stage7"
+        },
+        {
+            "name": "Stage8",
+            "textureAtlas": "StageAtlas",
+            "shader": "spriteShader",
+            "initialSubTexture": "Stage8"
+        },
+
 
         {
             "name": "player1_yellow_tank_type1_sprite_top",
@@ -2047,62 +2170,183 @@
                 "DDDDK0E2LDDDD"
             ],
             "enemies": [
-                { "type1": 1 },
-                { "type2": 1 },
-                { "type3": 1 },
-                { "type4": 1 }
-            ]
-        },
-
-        {
-            "description": [
-                "MDDDDDNDDDDDO",
-                "D00D11D22D33D",
-                "D0DD1DD2DD3DD",
-                "DDDDDDDDDDDDD",
-                "D44D55D66D77D",
-                "D4DD5DD6DD7DD",
-                "DDDDDDDDDDDDD",
-                "D88D99DAADBBD",
-                "D8DD9DDADDBDD",
-                "DDDDDDDDDDDDD",
-                "DCCDGGDHHDIID",
-                "DCDDGDDHDDDDD",
-                "DDDDDH1GDDJJD",
-                "DDDDK0E2LDDDD"
-            ],
-            "enemies": [
-                { "type1": 2 },
-                { "type4": 0 }
-            ]
-        },
-
-        {
-            "description": [
-                "DDDDD",
-                "DD9DD",
-                "DDDDD",
-                "DDKDD"
-
-            ],
-            "enemies": [
+                { "type1": 18 },
                 { "type2": 2 }
             ]
         },
 
         {
             "description": [
-                "MDDDDKDDD",
-                "NDD9DDDDD",
-                "ODD9D99DD",
-                "DDD9DDDDD",
-                "9DD9D9DDD",
-                "DDDDDDDDD"
+                "MDD9DDN9DDDDO",
+                "D4D9DDD4D4D4D",
+                "D4DDDD44D494D",
+                "DDD4DDDDD9DDD",
+                "BDD4DD9DD4B49",
+                "BBDDD4DD9DBDD",
+                "D444BBB9DDB4D",
+                "DDD9B4D4D4D4D",
+                "94D9D4D4DDD4D",
+                "D4D4D444D4949",
+                "D4D4D444DDDDD",
+                "D4DDDH1GD4D4D",
+                "D4D4K0E2L444D"
+
             ],
             "enemies": [
-                { "type4": 1 }
+                { "type4": 2 },
+                { "type2": 4 },
+                { "type1": 14 }
+
+
+            ]
+        },
+        {
+            "description": [
+                "MDDD4DND4DDDO",
+                "DBBB4DDDDD666",
+                "4BBBDDDDDDDDD",
+                "BBBBDDD4D4442",
+                "BBBB4443D4D0D",
+                "BBBBDD4DDDD0D",
+                "DBDDDD999DDBD",
+                "D1D1DDDDDBBBB",
+                "420420333BBBB",
+                "DDDDD4D11BBBB",
+                "4DD7DDD33BBBD",
+                "44D7DH1GDBBBD",
+                "944DK0E2L4DDD"
+
+            ],
+            "enemies": [
+                { "type1": 14 },
+                { "type2": 4 },
+                { "type4": 2 }
+            ]
+        },
+
+        {
+            "description": [
+                "MBBDDDNDDDDBO",
+                "BBDD14411DDDB",
+                "BDD04444441D8",
+                "8DD444444442D",
+                "DD03DDD344D2D",
+                "AD0D7D7D42DDD",
+                "DD4D11DD42DAA",
+                "DD44444444DDD",
+                "D0444444442DD",
+                "D3344444433DD",
+                "D4413443144DB",
+                "BD33DH1G33DBB",
+                "9BDDK0E2LDBB9"
+
+            ],
+            "enemies": [
+                { "type3": 10 },
+                { "type2": 5 },
+                { "type1": 2 },
+                { "type4": 3 }
+            ]
+        },
+        {
+            "description": [
+                "MDDD44NDDDDDO",
+                "6D1D4DDD889DD",
+                "9D4DDD4DDDDDD",
+                "4D444D44DAADA",
+                "3DDD3DDDDADDD",
+                "DD1DAADAAAD44",
+                "44DDA4D42DDDD",
+                "DDDDADDDDD57D",
+                "AAADAD9D4D5DD",
+                "DDD11DDDDD544",
+                "DDDD433341DDD",
+                "443DDH1GD34DD",
+                "3DDDK0E2LDDDD"
+
+            ],
+            "enemies": [
+                { "type3": 5 },
+                { "type4": 2 },
+                { "type1": 8 },
+                { "type2": 5 }
+            ]
+        },
+        {
+            "description": [
+                "MDDD1DNDDDD1O",
+                "D4D44DDCCC44D",
+                "D4DD4D9CCCCCD",
+                "CCC74DD4CCCCD",
+                "CCCCCC4402DDD",
+                "DD5CCCC402D88",
+                "4444CCCCCCC44",
+                "DDD44CCCC7DDD",
+                "D444DCCC44D4D",
+                "CCC4CDDDD4D4D",
+                "CCCCC8D8DD14D",
+                "4CCCCH1GD4DDD",
+                "447DK0E2L4D4D"
+
+            ],
+            "enemies": [
+                { "type4": 2 },
+                { "type2": 2 },
+                { "type4": 8 },
+                { "type1": 8 }
+            ]
+        },
+        {
+            "description": [
+                "MDDD9DNDDDDDO",
+                "99BD9DD99BBDD",
+                "B9DB9DDD9B99D",
+                "D9BD999DDB9DD",
+                "B4DBBB9D999DB",
+                "B99D94944DDBB",
+                "BB9D9BDB4DD99",
+                "BD9DDDDD9DD9D",
+                "DB4BD9DD9949D",
+                "B999DD499D49D",
+                "DDD4DDDDBBD4D",
+                "DDD9DH1GDBD4D",
+                "DDD9K0E2L9D4D"
+
+            ],
+            "enemies": [
+                { "type3": 2 },
+                { "type4": 8 },
+                { "type2": 8 },
+                { "type1": 2 }
+            ]
+        },
+
+        {
+            "description": [
+                "9B4MDB4NBDDDO",
+                "B4DBB44BDDD09",
+                "4DDAAAADDAAAA",
+                "DDDADDDDDDD09",
+                "BD4DDD8988888",
+                "DBDADDDRDDDDD",
+                "BD4ADDDRDDDDB",
+                "DBDDDDDRDDDDB",
+                "444ADD6966D09",
+                "DAAAADAAAADAA",
+                "DDDDDDDD89D09",
+                "1A1DDH1GD9DDB",
+                "9A9DK0E2L9DB9"
+
+            ],
+            "enemies": [
+                { "type4": 2 },
+                { "type2": 5 },
+                { "type3": 3 },
+                { "type1": 10 }
             ]
         }
+
+
     ]
 }
 

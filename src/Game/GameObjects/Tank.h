@@ -126,10 +126,12 @@ public:
 
     void activateShield(double duration);
     void levelUp();
+    void levelDown();
     void respawn();
     void setTankType(ETankType type);
     bool isDestroyed() const { return m_isDestroyed; }
     bool isSpawning() const { return m_isSpawning; }
+    bool isIceUnderTank() const { return m_isIceUnderTank; }
 private:
 
 	EOrientation m_eOrientation;
@@ -168,11 +170,11 @@ private:
 	Timer m_respawnTimer;
 	Timer m_shieldTimer;
     Timer m_explosionTimer;
-    Timer m_iceDriceTimer;
+    Timer m_iceDriveTimer;
     Timer m_twiceShootTimer;
     mutable Timer m_changeColorTimer;
 
-    double m_timerBetweenTwiceShoot = 300;
+    double m_timerBetweenTwiceShoot = 200;
     double m_timeBetweenChangingColor = 100;
 
 	double m_maxVelocityTank;
@@ -184,6 +186,9 @@ private:
     bool m_canFire;
     bool m_canDestroyBetton;
     bool m_isBonusTank;
+    bool m_redColor;
+    bool m_greenColor;
+    bool m_isIceUnderTank;
     mutable bool m_changeColorToRed;
     mutable  bool m_changeColorToGreen;
 

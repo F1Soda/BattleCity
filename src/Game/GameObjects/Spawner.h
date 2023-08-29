@@ -13,7 +13,7 @@ class Spawner
 public:
 	Spawner(glm::vec2 position, Level* pLevel, GameManager* pGameManager);
 
-	std::shared_ptr<Tank> Spawner::spawn(Tank::ETankType eTankType, bool isEnemy, int beginingLifes);
+	std::shared_ptr<Tank> spawn(Tank::ETankType eTankType, bool isEnemy, int beginingLifes);
 
 
 
@@ -34,6 +34,16 @@ public:
 	static const double MAX_VELOCITY_PLAYER_BULLET_TYPE2;
 	static const double MAX_VELOCITY_PLAYER_BULLET_TYPE3;
 	static const double MAX_VELOCITY_PLAYER_BULLET_TYPE4;
+
+	static const double MAX_VELOCITY_ENEMY_TANK_TYPE1;
+	static const double MAX_VELOCITY_ENEMY_TANK_TYPE2;
+	static const double MAX_VELOCITY_ENEMY_TANK_TYPE3;
+	static const double MAX_VELOCITY_ENEMY_TANK_TYPE4;
+									 
+	static const double MAX_VELOCITY_ENEMY_BULLET_TYPE1;
+	static const double MAX_VELOCITY_ENEMY_BULLET_TYPE2;
+	static const double MAX_VELOCITY_ENEMY_BULLET_TYPE3;
+	static const double MAX_VELOCITY_ENEMY_BULLET_TYPE4;
 
 private:
 

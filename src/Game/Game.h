@@ -39,6 +39,7 @@ public:
 	void setStartScreen();
 	void gameOver(glm::vec2& scaleScreen = glm::vec2(0));
 	void restart(Tank* pTank1, Tank* pTank2 = nullptr);
+	void end(glm::ivec2& scaleScreen = glm::ivec2(0));
 
 	static bool lighting;
 	static GLFWwindow* pWindow;
@@ -47,6 +48,8 @@ public:
 	//int getCurrentCountTankEnemies() const { return m_currentCountEnemyTanks; }
 	void pauseWhenChangingSizeOrPosionWindow();
 	GameManager* getGameManager() { return m_pGameManager.get(); }
+	void selecetStageScreen(Game::EGameMode eGameMode);
+	void Game::setFullWindow();
 	void exit();
 
 private:

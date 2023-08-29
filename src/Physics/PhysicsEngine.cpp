@@ -223,7 +223,7 @@ namespace Physics
 				}
 
 				const auto newPosition = currentDynamicObject->getTargetPosition() + static_cast<float>(currentDynamicObject->getCurrentVelocity() * delta) * currentDynamicObject->getCurrentDirection();
-				std::vector<std::shared_ptr<IGameObject>> objectsToCheck = m_pCurrentLevel->getObjectsInArea(newPosition, newPosition + currentDynamicObject->getSize());
+				std::vector<std::shared_ptr<IGameObject>> objectsToCheck = std::move(m_pCurrentLevel->getObjectsInArea(newPosition, newPosition + currentDynamicObject->getSize()));
 
 				const auto& colliders = currentDynamicObject->getColliders();
 				bool hasCollision = false;
@@ -469,13 +469,31 @@ namespace Physics
 	IGameObject* PhysicsEngine::getObjectByPos(glm::vec2 pos)
 	{
 		glm::vec2 windowScaleInPixels = m_pGameManager->getScaleScreenInPixels();
-		glm::ivec2 correctedPositionTank = glm::vec2(std::clamp(std::round(pos.x - Level::BLOCK_SIZE), 0.f, static_cast<float>(windowScaleInPixels.x)), std::clamp(std::round(windowScaleInPixels.y - pos.y) + Level::BLOCK_SIZE / 2, 0.f, static_cast<float>(windowScaleInPixels.y)));
+		glm::ivec2 correctedPositionTank = glm::vec2(std::clamp(std::round(pos.x - Level::BLOCK_SIZE), -16.f, static_cast<float>(windowScaleInPixels.x)+16.f), std::clamp(std::round(windowScaleInPixels.y - pos.y) + Level::BLOCK_SIZE / 2, -16.f, static_cast<float>(windowScaleInPixels.y) + 16.f));
 
 		int blockX = static_cast<int>(std::round(float(correctedPositionTank.x) / 16.f));
-		int blockY = static_cast<int>(std::round(float(correctedPositionTank.y) / 16.f));
+		int blockY = static_cast<int>(std::round(float(correctedPositionTank.y) / 16.f) - 1);
+
+		glm::vec2 scaleScreenInBlock = m_pGameManager->getScaleScreenInBlocks();
+		if (blockX < 0)
+		{
+			return  m_pGameManager->getObjectByIndex(int(scaleScreenInBlock.x * scaleScreenInBlock.y));
+		}
+		if (blockY < 0)
+		{
+			return  m_pGameManager->getObjectByIndex(int(scaleScreenInBlock.x * scaleScreenInBlock.y + 1));
+		}
+		if (blockX >= scaleScreenInBlock.x)
+		{
+			return  m_pGameManager->getObjectByIndex(int(scaleScreenInBlock.x * scaleScreenInBlock.y + 2));
+		}
+		if (blockY >= scaleScreenInBlock.y)
+		{
+			return  m_pGameManager->getObjectByIndex(int(scaleScreenInBlock.x * scaleScreenInBlock.y + 3));
+		}
 
 
-		IGameObject* res = m_pGameManager->getObjectByIndex(static_cast<unsigned int>((blockY - 1) * m_pGameManager->getScaleScreenInBlocks().x + blockX));
+		IGameObject* res = m_pGameManager->getObjectByIndex(static_cast<unsigned int>((blockY) * m_pGameManager->getScaleScreenInBlocks().x + blockX));
 
 		return res;
 	}
@@ -490,6 +508,20 @@ namespace Physics
 
 		return static_cast<int>(blockX + (blockY - 1) * m_pCurrentLevel->getSizeLevelInBlocks().x);
 			
+	}
+
+
+	glm::vec2 PhysicsEngine::alignPositionByPixels(IGameObject* object, float pixelsAlign)
+	{
+		/*if (object->getCurrentDirection().x != 0.f)
+		{
+			return glm::vec2(object->getTargetPosition().x, static_cast<unsigned int>(std::round(object->getTargetPosition().y / pixelsAlign) * pixelsAlign));
+		}
+		else if (object->getCurrentDirection().y != 0.f)
+		{
+			return glm::vec2(static_cast<unsigned int>(std::round(object->getTargetPosition().x / pixelsAlign) * pixelsAlign), object->getTargetPosition().y);
+		}*/
+		return glm::vec2(static_cast<unsigned int>(std::round(object->getTargetPosition().x / pixelsAlign) * pixelsAlign), static_cast<unsigned int>(std::round(object->getTargetPosition().y / pixelsAlign) * pixelsAlign));
 	}
 
 }

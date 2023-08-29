@@ -2,6 +2,7 @@
 
 #include <array>
 #include "../UI/GameStates/Level.h"
+#include <queue>
 class Tank;
 class Timer;
 
@@ -37,7 +38,7 @@ public:
 
 	void update(const double delta);
 
-	static EEnemyState m_eEnemyState;
+	EEnemyState m_eEnemyState;
 
 private:
 
@@ -54,14 +55,22 @@ private:
 	std::vector<Tank::EOrientation> AIComponent::RandomChageDirection(std::vector<Tank::EOrientation>& freedomCeil, Tank::EOrientation orientationTank);
 	void AIComponent::checkCheckerBox(std::vector<Tank::EOrientation>& freedomCeils, AIComponent::ESubBoxChecker eSubBoxChecker, IGameObject::EObjectType objectType, bool addOrientationByChance);
 	Timer m_changeDirectionTimer;
+	Timer m_findWayTimer;
+	Timer m_changeEnemyStateTimer;
+
+	double m_timeChangingEnemyState = 35000;
+	double m_durationBetweenFindingWay = 5000;
 	double timeBetweenChangiingDirection;
 
 	bool isDirectionOnWall;
+
+	std::queue<glm::ivec2> m_instructionNavigation;
+	void AIComponent::getInstructionToGetPosition(glm::vec2& posWhere, glm::vec2& currentPos);
 
 	// Setting chances
 	double chanceChangeDirection = 0.01;
 	const double chanceFire = 0.5;
 	double changeToReturnBack = 0.05;
 	double chanceToTurnOnBrickWall = 0.05;
-
+	bool m_mustFindWay;
 };

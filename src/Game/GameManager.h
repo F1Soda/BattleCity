@@ -10,6 +10,8 @@ class Level;
 class IGameObject;
 class Game;
 class Bonus;
+class SelectStage;
+
 
 
 class GameManager
@@ -44,11 +46,23 @@ public:
 	void bonusUpgradeTank(Tank* tank);
 	void bonusDestroyAllEnemyTanks();
 	void bonusAddLife(Tank* pTank);
+	void setFullWindow();
+	void setSelectStageScreen(int iGameMode);
 
 	void setSoundOff() { m_pAudioManager->m_isSoundOn = false; }
 	void setSoundOn() { m_pAudioManager->m_isSoundOn = true; }
+	void setOnOffSound() { m_pAudioManager->m_isSoundOn = !m_pAudioManager->m_isSoundOn; }
+	void SetVolumeMusic(AudioManager::EMusicType, float volume);
+	void playMusic(AudioManager::EMusicType eType);
+	float getVolumeMusic(AudioManager::EMusicType eType);
+	void stopMusic(AudioManager::EMusicType eType);
+	//void startNewLevel(const size_t level, const Game::EGameMode eGameMode, Tank::ETankType typeTank1 = Tank::ETankType::Player1Yellow_type1, Tank::ETankType typeTank2 = Tank::ETankType::Player2Green_type1, int beginingLifesTank1 = 3, int beginigLifesTank2 = 3);
+	void end();
+
+	bool isEndSceen;
 
 private:
+	friend class SelectStage;
 	Game* m_pGame;
 	Level* m_pCurrentLevel;
 	std::shared_ptr<AudioManager> m_pAudioManager;

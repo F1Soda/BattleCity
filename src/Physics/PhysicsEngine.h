@@ -73,13 +73,14 @@ namespace Physics
 		static void addDynamicObjectInNextFrame(std::shared_ptr<IGameObject> object);
 		static IGameObject* getObjectByPos(glm::vec2 pos);
 		static int getObjectIndexByPos(glm::vec2 pos);
+		static glm::vec2 alignPositionByPixels(IGameObject* object, float pixelsAlign);
 	private:
 		//static std::unordered_set<std::shared_ptr<IGameObject>> m_dynamicObjects;
 		static std::vector<std::shared_ptr<IGameObject>> m_dynamicObjects;
 		static std::shared_ptr<Level> m_pCurrentLevel;
 
-		static bool PhysicsEngine::hasCollidersIntersection(const Collider& collider1, const glm::vec2 position1, const Collider& collider2, const glm::vec2 position2, bool forTanks = false);
-		static bool PhysicsEngine::hasPositionIntersection(const std::shared_ptr<IGameObject>& pObject1, const glm::vec2 position1, const std::shared_ptr<IGameObject>& pObject2, const glm::vec2 position2, bool forTanks = false);
+		static bool hasCollidersIntersection(const Collider& collider1, const glm::vec2 position1, const Collider& collider2, const glm::vec2 position2, bool forTanks = false);
+		static bool hasPositionIntersection(const std::shared_ptr<IGameObject>& pObject1, const glm::vec2 position1, const std::shared_ptr<IGameObject>& pObject2, const glm::vec2 position2, bool forTanks = false);
 
 		static void calculateTargetPositions(std::vector<std::shared_ptr<IGameObject>>& dynamicObjects, const double delta);
 		static void updatePosition(std::vector<std::shared_ptr<IGameObject>>& dynamicObjects);

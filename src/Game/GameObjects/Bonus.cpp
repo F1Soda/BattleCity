@@ -65,6 +65,7 @@ void Bonus::onCollision(IGameObject& object)
 	{
 		//IGameObject* objectWithoutConst = const_cast<IGameObject*>(&object);
 		Tank* pTank = dynamic_cast<Tank*>(&object);
+		m_pGameManager->playSound(AudioManager::EAudioType::Bonus);
 		if (!pTank->m_isEnemyTank)
 		{
 			std::cout << "Bonus taken!\n";

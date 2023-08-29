@@ -23,7 +23,7 @@ public:
 	static constexpr unsigned int STARTSCREEN_WIDTH = 15 * BLOCK_SIZE * 2;
 	static constexpr unsigned int STARTSCREEN_HEIGHT = 14 * BLOCK_SIZE * 2;
 	static constexpr unsigned int MENU_WIDTH = 128;
-	static constexpr unsigned int MENU_HEIGHT = 64;
+	static constexpr unsigned int MENU_HEIGHT = 40;
 	static constexpr unsigned int TANK_SIZE = BLOCK_SIZE*2;
 
 

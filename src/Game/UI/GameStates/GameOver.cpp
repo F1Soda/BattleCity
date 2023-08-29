@@ -54,8 +54,8 @@ GameOver::GameOver(const std::vector<std::string>& gameOverDescription, Game* pG
 	, m_keyReleased(false)
 	, m_scaleScreen(scaleWindow)
 {
-
-    unsigned int leftOffsetPixels = 5 * BLOCK_SIZE;
+    //scaleWindow.x / 2 - WIDTH_GAME_OVER_IN_BLOCKS;
+    unsigned int leftOffsetPixels = scaleWindow.x / 2 - WIDTH_GAME_OVER_IN_BLOCKS/2 * 16;
     unsigned int bottomOffset = m_scaleScreen.y + 11 * BLOCK_SIZE;
 
 	unsigned int currentBottomOffset = bottomOffset;
